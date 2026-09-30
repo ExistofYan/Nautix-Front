@@ -1,0 +1,4 @@
+﻿src/views/ai/AIWorkbench.vue(45,46): error TS2322: Type '(q: string) => Promise<void>' is not assignable to type '(item: RecoItem) => any'.
+  Types of parameters 'q' and 'item' are incompatible.
+    Type 'RecoItem' is not assignable to type 'string'.
+

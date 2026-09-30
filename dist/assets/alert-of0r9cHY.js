@@ -1,0 +1,1 @@
+var e={CRITICAL:`critical`,WARNING:`warning`,INFO:`info`};function t(t){return t==null?e.INFO:t>=3?e.CRITICAL:t===2?e.WARNING:e.INFO}var n={[e.CRITICAL]:`#fb7185`,[e.WARNING]:`#fbbf24`,[e.INFO]:`#38bdf8`},r={[e.CRITICAL]:`紧急`,[e.WARNING]:`警告`,[e.INFO]:`提示`};export{r as n,t as r,n as t};

@@ -1,15 +1,25 @@
-export interface Port{
+/* Port view models derived from the real Port entity ('@/api/types'). */
+import type { Port } from '@/api/types'
 
-    id:number
+/** A group of ports sharing one country — used by statistics. */
+export interface PortCluster {
+  country: string
+  countryCode: string
+  count: number
+  ports: Port[]
+}
 
-    portName:string
+/** One row of the port-type distribution table. */
+export interface PortTypeRow {
+  type: string
+  count: number
+  sharePct: number
+}
 
-    country:string
-
-    countryCode:string
-
-    latitude:number
-
-    longitude:number
-
+/** Edge between two ports connected by at least one route (chord diagram). */
+export interface PortConnectionEdge {
+  startPortId: number
+  endPortId: number
+  routeCount: number
+  totalDistanceNm: number
 }

@@ -72,6 +72,78 @@
             <template #title>{{ lang.t('nav.analytics') }}</template>
           </el-menu-item>
 
+          <el-menu-item index="/ai">
+            <el-icon><MagicStick /></el-icon>
+            <template #title>智能问答台</template>
+          </el-menu-item>
+
+          <el-sub-menu index="replay">
+            <template #title>
+              <el-icon><VideoCamera /></el-icon>
+              <span>回放与航线</span>
+            </template>
+            <el-menu-item index="/replay">航迹工作台</el-menu-item>
+            <el-menu-item index="/replay/ship">单船回放</el-menu-item>
+            <el-menu-item index="/replay/sensor">传感器回放</el-menu-item>
+            <el-menu-item index="/route/replay">航线回放</el-menu-item>
+            <el-menu-item index="/route/animation">航线动画</el-menu-item>
+          </el-sub-menu>
+
+          <el-sub-menu index="fleet">
+            <template #title>
+              <el-icon><Grid /></el-icon>
+              <span>船队管理</span>
+            </template>
+            <el-menu-item index="/fleet">船队总览</el-menu-item>
+            <el-menu-item index="/fleet/map">船队态势</el-menu-item>
+            <el-menu-item index="/fleet/report">船队报告</el-menu-item>
+            <el-menu-item index="/fleet/mission">任务规划</el-menu-item>
+          </el-sub-menu>
+
+          <el-sub-menu index="alert-extra">
+            <template #title>
+              <el-icon><WarnTriangleFilled /></el-icon>
+              <span>告警分析</span>
+            </template>
+            <el-menu-item index="/alert/overview">告警总览</el-menu-item>
+            <el-menu-item index="/alert/analysis">规则分析</el-menu-item>
+            <el-menu-item index="/alert/statistics">告警统计</el-menu-item>
+            <el-menu-item index="/alert/map">告警分布</el-menu-item>
+            <el-menu-item index="/alert/history">告警历史</el-menu-item>
+          </el-sub-menu>
+
+          <el-sub-menu index="sensor-extra">
+            <template #title>
+              <el-icon><TrendCharts /></el-icon>
+              <span>传感分析</span>
+            </template>
+            <el-menu-item index="/sensor/center">传感中心</el-menu-item>
+            <el-menu-item index="/sensor/analysis">多维分析</el-menu-item>
+            <el-menu-item index="/sensor/anomaly">异常检测</el-menu-item>
+            <el-menu-item index="/sensor/correlation">关联矩阵</el-menu-item>
+            <el-menu-item index="/sensor/history">历史数据</el-menu-item>
+          </el-sub-menu>
+
+          <el-menu-item index="/system">
+            <el-icon><Monitor /></el-icon>
+            <template #title>系统监控</template>
+          </el-menu-item>
+
+          <el-menu-item index="/earth">
+            <el-icon><Apple /></el-icon>
+            <template #title>数字地球</template>
+          </el-menu-item>
+
+          <el-menu-item index="/command">
+            <el-icon><Aim /></el-icon>
+            <template #title>指挥中心</template>
+          </el-menu-item>
+
+          <el-menu-item index="/workspace">
+            <el-icon><Grid /></el-icon>
+            <template #title>效率工作台</template>
+          </el-menu-item>
+
           <el-menu-item index="/system/logs">
             <el-icon><Document /></el-icon>
             <template #title>{{ lang.t('nav.logs') }}</template>

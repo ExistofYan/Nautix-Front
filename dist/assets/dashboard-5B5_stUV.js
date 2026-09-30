@@ -1,0 +1,1 @@
+import{t as e}from"./axios-DnKbYqlH.js";var t=()=>e.get(`/dashboard/stats`),n=()=>e.get(`/dashboard/alert-summary`),r=()=>e.get(`/dashboard/ship-type-dist`),i=()=>e.get(`/dashboard/alert-hour-dist`),a=()=>e.get(`/public/ping`);export{a,r as i,n,t as r,i as t};

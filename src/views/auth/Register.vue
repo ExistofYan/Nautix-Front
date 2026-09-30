@@ -163,7 +163,7 @@ const handleRegister = async () => {
         ElMessage.success(lang.t('auth.registerOk'))
         router.push('/login')
       } else {
-        ElMessage.error(lang.t('auth.registerFailed'))
+        ElMessage.error(result.message || lang.t('auth.registerFailed'))
       }
     }
   })

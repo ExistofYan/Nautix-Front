@@ -66,8 +66,9 @@
           <el-table-column prop="draft" :label="lang.t('col.draft')" width="90" />
           <el-table-column prop="sailingSpeed" :label="lang.t('col.speed')" width="90" />
           <el-table-column prop="operatingCompany" :label="lang.t('col.operator')" min-width="130" show-overflow-tooltip />
-          <el-table-column :label="lang.t('common.actions')" width="140" fixed="right">
+          <el-table-column :label="lang.t('common.actions')" width="180" fixed="right">
             <template #default="{ row }">
+              <el-button link type="info" size="small" @click="detailShip = row">详情</el-button>
               <el-button link type="primary" size="small" @click="openEdit(row)">{{ lang.t('common.edit') }}</el-button>
               <el-button link type="danger" size="small" @click="confirmDelete(row)">{{ lang.t('common.delete') }}</el-button>
             </template>
@@ -139,6 +140,8 @@
         <el-button type="primary" round :loading="saving" @click="save">{{ lang.t('common.save') }}</el-button>
       </template>
     </el-dialog>
+
+    <ShipDetailDrawer :ship="detailShip" @close="detailShip = null" />
   </div>
 </template>
 
@@ -152,10 +155,13 @@ import {
   updateShip,
 } from '@/api/ship'
 import { useLang } from '@/stores/lang'
+import ShipDetailDrawer from '@/components/ship/ShipDetailDrawer.vue'
 import type { MsgKey } from '@/i18n'
 import type { ShipInfo } from '@/api/types'
 
 const lang = useLang()
+
+const detailShip = ref<ShipInfo | null>(null)
 
 const loading = ref(false)
 const saving = ref(false)

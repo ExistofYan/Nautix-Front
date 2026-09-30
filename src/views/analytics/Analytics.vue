@@ -62,12 +62,25 @@
         </el-card>
       </el-col>
     </el-row>
+
+    <!-- Row 3: 深度分析子视图入口 -->
+    <div class="sub-grid">
+      <router-link v-for="s in subViews" :key="s.path" :to="s.path" class="sub-card nx-panel">
+        <el-icon :size="26" :color="s.color"><component :is="s.icon" /></el-icon>
+        <div class="sub-txt">
+          <b>{{ s.title }}</b>
+          <em>{{ s.desc }}</em>
+        </div>
+        <el-icon class="sub-arrow"><ArrowRight /></el-icon>
+      </router-link>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue'
-import { Clock, OfficeBuilding, TrendCharts, Guide } from '@element-plus/icons-vue'
+import { Clock, OfficeBuilding, TrendCharts, Guide, ArrowRight, Ship, Odometer, DataAnalysis, Document, Histogram } from '@element-plus/icons-vue'
+import type { Component } from 'vue'
 import { getAlertHourDistribution } from '@/api/dashboard'
 import { getTopRoutesByDistance } from '@/api/route'
 import { getSensorVolatility } from '@/api/sensor'
@@ -87,6 +100,15 @@ const alertTimeChart = useChart(alertTimeChartRef)
 const operatorPie = useChart(operatorPieRef)
 const sensorVolatility = useChart(sensorVolatilityRef)
 const routeTop10 = useChart(routeTop10Ref)
+
+/* 深度分析子视图入口 */
+const subViews: { path: string; title: string; desc: string; icon: Component; color: string }[] = [
+  { path: '/analytics/fleet', title: '船队分析', desc: '按运营公司聚合规模与航速', icon: Ship, color: '#38bdf8' },
+  { path: '/analytics/fuel', title: '燃油分析', desc: '存量分布与低油量预警', icon: Odometer, color: '#fbbf24' },
+  { path: '/analytics/sensor', title: '传感器分析', desc: '波动排行与稳定性评估', icon: DataAnalysis, color: '#a78bfa' },
+  { path: '/analytics/ship', title: '船舶分析', desc: '船型 / 船龄 / 尺度分布', icon: Histogram, color: '#34d399' },
+  { path: '/analytics/report', title: '综合报表', desc: '一键生成可打印的周期报告', icon: Document, color: '#f472b6' },
+]
 
 // Sensor volatility states
 const sensorVolatilityLoading = ref(false)
@@ -406,6 +428,13 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.sub-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 16px; margin-top: 4px; }
+.sub-card { display: flex; align-items: center; gap: 14px; padding: 18px 20px; border-radius: 14px; text-decoration: none; transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease; }
+.sub-card:hover { transform: translateY(-3px); border-color: rgba(125, 211, 252, .4); box-shadow: 0 10px 26px rgba(37, 99, 235, .25); }
+.sub-txt { display: flex; flex-direction: column; gap: 3px; min-width: 0; flex: 1; }
+.sub-txt b { color: #f1f5f9; font-size: 14.5px; }
+.sub-txt em { font-style: normal; color: #64748b; font-size: 11.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sub-arrow { color: #475569; }
 .analytics-container {
   min-height: 100%;
 }

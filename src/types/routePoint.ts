@@ -1,13 +1,22 @@
-export interface RoutePoint{
+/* Lightweight route-point shapes for map/layer rendering.
+ * The canonical entity stays in '@/api/types' — never redefine it here. */
+import type { Route, RoutePoint } from '@/api/types'
 
-    id:number
+/** Minimal projected point used by SVG layers. */
+export interface RoutePointLite {
+  x: number
+  y: number
+  order: number
+}
 
-    routeId:number
+/** A route bundled with its ordered points — the unit consumed by layer components. */
+export interface RouteWithPoints extends Route {
+  points: RoutePoint[]
+}
 
-    latitude:number
-
-    longitude:number
-
-    sequence:number
-
+/** Ordered lite points after projection, ready for <polyline>. */
+export interface ProjectedRoute {
+  routeId: number
+  name: string
+  pts: RoutePointLite[]
 }

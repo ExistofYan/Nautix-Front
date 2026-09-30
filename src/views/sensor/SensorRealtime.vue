@@ -6,7 +6,7 @@
           {{ lang.t('sr.title') }}
           <span v-if="autoRefresh" class="live-badge"><span class="live-dot"></span>{{ lang.t('sr.live') }}</span>
         </h2>
-        <p class="nx-page-desc">{{ lang.t('sr.desc') }}</p>
+        <p class="nx-page-desc">{{ lang.t('sr.desc') }} · 实时流 {{ realtime.readings.length }} 路</p>
       </div>
       <el-switch
         v-model="autoRefresh"
@@ -93,12 +93,14 @@ import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { getSensorDataPage } from '@/api/sensor'
 import { useShipStore } from '@/stores/shipStore'
+import { useSensorRealtimeStore } from '@/stores/sensorRealtime'
 import { useChart, chartTheme } from '@/hooks/useChart'
 import { useLang } from '@/stores/lang'
 import type { SensorData } from '@/api/types'
 
 const lang = useLang()
 const shipStore = useShipStore()
+const realtime = useSensorRealtimeStore()
 
 const shipOptions = computed(() =>
   shipStore.ships.map(s => ({ value: s.id as number, label: `${s.shipName} (${s.id})` }))

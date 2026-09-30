@@ -1,0 +1,19 @@
+﻿src/components/map/CesiumViewer.vue(128,1): error TS6133: 'WeatherLayer' is declared but its value is never read.
+src/components/map/CesiumViewer.vue(183,10): error TS6133: 'openReplay' is declared but its value is never read.
+src/components/map/CesiumViewer.vue(194,7): error TS6133: 'PALETTE' is declared but its value is never read.
+src/components/route/RouteReplay.vue(40,13): error TS7006: Parameter 'r' implicitly has an 'any' type.
+src/components/route/RouteReplay.vue(41,10): error TS7006: Parameter 'r' implicitly has an 'any' type.
+src/components/system/ServerStatus.vue(44,1): error TS6133: 'SystemStatus' is declared but its value is never read.
+src/stores/route.ts(2,1): error TS6133: 'RouteWithPoints' is declared but its value is never read.
+src/stores/route.ts(110,13): error TS18004: No value exists in scope for the shorthand property 'pack'. Either declare one or provide an initializer.
+src/views/port/Port.vue(129,28): error TS2339: Property 'loading' does not exist on type 'Store<"port", Pick<{ ports: Ref<{ id?: number | undefined; wpiId?: string | undefined; portName?: string | undefined; country?: string | undefined; countryCode?: string | undefined; portCode?: string | undefined; ... 4 more ...; maxDraft?: number | undefined; }[], Port[] | { ...; }[]>; ... 5 more ...; selectPort: (p...'.
+src/views/replay/ReplayPlayer.vue(17,12): error TS2345: Argument of type '{}' is not assignable to parameter of type '{ readonly frame: ReplayFrame | null; readonly index: number; readonly total: number; readonly speed: ReplaySpeed; readonly playing: boolean; } & VNodeProps & AllowedComponentProps & ComponentCustomProps & Record<...>'.
+  Type '{}' is missing the following properties from type '{ readonly frame: ReplayFrame | null; readonly index: number; readonly total: number; readonly speed: ReplaySpeed; readonly playing: boolean; }': frame, index, total, speed, playing
+src/views/route/RouteAnimation.vue(60,13): error TS7006: Parameter 'r' implicitly has an 'any' type.
+src/views/route/RouteAnimation.vue(61,10): error TS7006: Parameter 'r' implicitly has an 'any' type.
+src/views/route/RouteAnimation.vue(68,24): error TS7006: Parameter 'o' implicitly has an 'any' type.
+src/views/route/RouteReplay.vue(50,14): error TS7006: Parameter 'r' implicitly has an 'any' type.
+src/views/route/RouteReplay.vue(51,10): error TS7006: Parameter 'r' implicitly has an 'any' type.
+src/views/route/RouteStatistics.vue(35,14): error TS7006: Parameter 'r' implicitly has an 'any' type.
+src/views/route/RouteStatistics.vue(36,10): error TS7006: Parameter 'r' implicitly has an 'any' type.
+

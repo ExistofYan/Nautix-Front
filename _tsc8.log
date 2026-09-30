@@ -1,0 +1,5 @@
+﻿src/views/simulator/Simulator.vue(184,17): error TS2345: Argument of type '(ev: MessageEvent) => void' is not assignable to parameter of type '(data: unknown) => void'.
+  Types of parameters 'ev' and 'data' are incompatible.
+    Type 'unknown' is not assignable to type 'MessageEvent<any>'.
+src/views/simulator/Simulator.vue(187,38): error TS2304: Cannot find name 'reload'.
+

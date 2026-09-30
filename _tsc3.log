@@ -1,0 +1,12 @@
+﻿src/components/system/ServerStatus.vue(45,20): error TS6133: 'ref' is declared but its value is never read.
+src/components/system/ServerStatus.vue(53,7): error TS6133: 'snapshot' is declared but its value is never read.
+src/components/system/ServerStatus.vue(55,15): error TS2339: Property 'history' does not exist on type 'Store<"system", Pick<{ samples: Ref<{ t: number; rttMs: number; ok: boolean; }[], PingSample[] | { t: number; rttMs: number; ok: boolean; }[]>; stats: Ref<{ shipCount: number; alertCount: number; sensorConfigCount: number; weatherCount: number; } | null, DashboardStats | ... 1 more ... | null>; ... 6 more ...; reset...'.
+src/components/system/ServerStatus.vue(55,54): error TS2339: Property 'history' does not exist on type 'Store<"system", Pick<{ samples: Ref<{ t: number; rttMs: number; ok: boolean; }[], PingSample[] | { t: number; rttMs: number; ok: boolean; }[]>; stats: Ref<{ shipCount: number; alertCount: number; sensorConfigCount: number; weatherCount: number; } | null, DashboardStats | ... 1 more ... | null>; ... 6 more ...; reset...'.
+src/components/system/ServerStatus.vue(58,14): error TS2339: Property 'lastRtt' does not exist on type 'Store<"system", Pick<{ samples: Ref<{ t: number; rttMs: number; ok: boolean; }[], PingSample[] | { t: number; rttMs: number; ok: boolean; }[]>; stats: Ref<{ shipCount: number; alertCount: number; sensorConfigCount: number; weatherCount: number; } | null, DashboardStats | ... 1 more ... | null>; ... 6 more ...; reset...'.
+src/components/system/ServerStatus.vue(58,55): error TS2339: Property 'lastRtt' does not exist on type 'Store<"system", Pick<{ samples: Ref<{ t: number; rttMs: number; ok: boolean; }[], PingSample[] | { t: number; rttMs: number; ok: boolean; }[]>; stats: Ref<{ shipCount: number; alertCount: number; sensorConfigCount: number; weatherCount: number; } | null, DashboardStats | ... 1 more ... | null>; ... 6 more ...; reset...'.
+src/stores/route.ts(107,14): error TS2353: Object literal may only specify known properties, and 'route' does not exist in type 'RouteWithPoints'.
+src/views/route/RouteReplay.vue(50,17): error TS2304: Cannot find name 'Route'.
+src/views/route/RouteReplay.vue(50,30): error TS2304: Cannot find name 'Route'.
+src/views/route/RouteStatistics.vue(35,17): error TS2304: Cannot find name 'Route'.
+src/views/route/RouteStatistics.vue(35,30): error TS2304: Cannot find name 'Route'.
+

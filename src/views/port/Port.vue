@@ -117,6 +117,23 @@
         <el-button type="primary" round :loading="saving" @click="save">{{ lang.t('common.save') }}</el-button>
       </template>
     </el-dialog>
+
+    <div class="port-viz">
+      <PortStatistics />
+
+      <div class="nx-panel board-section">
+      <div class="board-head">
+        <h3 class="board-title">港口看板</h3>
+        <span class="board-sub">共 {{ portStore.ports.length }} 个港口 · 天气缓存 {{ weatherStore.weatherList.length }} 区</span>
+      </div>
+      <div v-if="!portStore.loaded && portStore.ports.length === 0" class="board-loading"><el-skeleton :rows="2" animated /></div>
+      <div v-else class="board-grid">
+        <PortCard v-for="p in portStore.ports.slice(0, 12)" :key="p.id" :port="p" @select="openBoard" />
+      </div>
+    </div>
+      <PortDetail :port="boardPort" @close="boardOpen = false" />
+      <PortConnection />
+    </div>
   </div>
 </template>
 
@@ -125,7 +142,13 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { addPort, deletePort, getPortPage, updatePort } from '@/api/port'
 import { useLang } from '@/stores/lang'
+import PortStatistics from '@/components/port/PortStatistics.vue'
+import PortConnection from '@/components/port/PortConnection.vue'
+import PortCard from '@/components/port/PortCard.vue'
+import PortDetail from '@/components/port/PortDetail.vue'
 import type { Port } from '@/api/types'
+import { usePortStore } from '@/stores/port'
+import { useWeatherStore } from '@/stores/weather'
 
 const lang = useLang()
 
@@ -220,15 +243,36 @@ async function confirmDelete(row: Port) {
   }
 }
 
-onMounted(reload)
+const portStore = usePortStore()
+const weatherStore = useWeatherStore()
+const boardOpen = ref(false)
+const boardPort = ref<Port | null>(null)
+
+async function openBoard(p: Port) {
+  boardPort.value = p
+  boardOpen.value = true
+}
+
+onMounted(() => {
+  reload()
+  void portStore.load()
+  void weatherStore.loadWeather()
+})
 </script>
 
 <style scoped>
+.port-viz { display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 16px; margin-top: 16px; }
 .filter-bar { display: flex; gap: 10px; padding: 14px 16px; flex-wrap: wrap; align-items: center; }
 .table-card { padding: 10px 14px 14px; }
 .table-info { padding: 12px 0; display: flex; align-items: center; }
 .result-count { font-size: 14px; color: #9ca3af; font-weight: 500; }
 .pager { display: flex; justify-content: flex-end; margin-top: 12px; }
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 16px; }
+.board-section { margin-top: 16px; padding: 14px 16px; }
+.board-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 10px; }
+.board-title { font-size: 15px; color: var(--nx-text); margin: 0; }
+.board-sub { font-size: 12px; color: var(--nx-text-dim); }
+.board-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
+.board-loading { padding: 12px; }
 .empty-state { padding: 60px 0; display: flex; justify-content: center; align-items: center; min-height: 400px; }
 </style>

@@ -41,14 +41,7 @@
             class="msg-row"
             :class="msg.role === 'user' ? 'row-user' : 'row-bot'"
           >
-            <div class="msg-avatar">
-              <el-icon v-if="msg.role === 'user'"><User /></el-icon>
-              <el-icon v-else><Service /></el-icon>
-            </div>
-            <div class="msg-bubble" :class="{ 'bubble-error': msg.intent === 'error' }">
-              <pre class="msg-text">{{ msg.content }}</pre>
-              <span class="msg-time">{{ formatTime(msg.time) }}</span>
-            </div>
+            <AIResponseCard :text="msg.content" :mine="msg.role === 'user'" :at="msg.time" />
           </div>
 
           <div v-if="aiStore.loading" class="msg-row row-bot">
@@ -89,9 +82,10 @@
 
 <script setup lang="ts">
 import { nextTick, ref, watch } from 'vue'
-import { Close, Service, User } from '@element-plus/icons-vue'
+import { Close, Service } from '@element-plus/icons-vue'
 import { useAIStore } from '@/stores/ai'
 import { useLang } from '@/stores/lang'
+import AIResponseCard from './AIResponseCard.vue'
 
 const aiStore = useAIStore()
 const lang = useLang()
@@ -109,12 +103,6 @@ function submit() {
 function pick(text: string) {
   if (aiStore.loading) return
   aiStore.send(text)
-}
-
-function formatTime(iso: string) {
-  const d = new Date(iso)
-  if (Number.isNaN(d.getTime())) return ''
-  return d.toLocaleTimeString(lang.lang === 'zh' ? 'zh-CN' : 'en-AU', { hour12: false })
 }
 
 // 展开时按当前语言加载常见问题（切换语言后 suggestions 会被清空）

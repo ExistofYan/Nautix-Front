@@ -5,7 +5,7 @@ export function useSensor(){
 
     const store=useSensorStore()
 
-    const sensorCount=computed(()=>store.sensors.length)
+    const sensorCount=computed(()=>store.configs.length)
 
     return{
 

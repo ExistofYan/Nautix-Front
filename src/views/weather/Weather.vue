@@ -8,6 +8,8 @@
       <el-button round @click="reload"><el-icon><Refresh /></el-icon>{{ lang.t('common.refresh') }}</el-button>
     </div>
 
+    <ForecastPanel />
+
     <el-empty v-if="!loading && regions.length === 0" :description="lang.t('we.empty')" />
 
     <div v-loading="loading" class="weather-grid">
@@ -76,6 +78,7 @@
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { getAllWeatherRegions } from '@/api/weather'
+import ForecastPanel from '@/components/weather/ForecastPanel.vue'
 import { useLang } from '@/stores/lang'
 import { weatherTypes } from '@/i18n'
 import type { WeatherRegion } from '@/api/types'

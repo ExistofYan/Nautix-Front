@@ -1,0 +1,1 @@
+import{F as e,M as t,u as n}from"./_plugin-vue_export-helper-Mk1vbPGr.js";import{t as r}from"./fleet-i3OIiSbJ.js";function i(){let i=r(),a,o=n(()=>i.fleets.length);return e(()=>{i.load(),a=window.setInterval(()=>void i.load(),3e4)}),t(()=>{a!==void 0&&window.clearInterval(a)}),{store:i,fleetCount:o}}export{i as t};

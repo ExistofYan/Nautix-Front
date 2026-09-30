@@ -1,0 +1,1 @@
+import{t as e}from"./axios-DnKbYqlH.js";function t(t){return e.get(`/route/page`,{params:t})}function n(e=10){return t({page:1,count:e,sortField:`distanceNm`,sortOrder:`desc`})}function r(t){return e.get(`/route/${t}`)}export{t as n,n as r,r as t};

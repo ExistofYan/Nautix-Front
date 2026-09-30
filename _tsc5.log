@@ -1,0 +1,2 @@
+﻿src/views/workspace/ClassicWorkspace.vue(14,36): error TS2322: Type 'string' is not assignable to type 'Component | undefined'.
+

@@ -1,0 +1,1 @@
+import{t as e}from"./axios-DnKbYqlH.js";function t(){return e.get(`/weather`)}export{t};

@@ -1,9 +1,19 @@
-export interface AnalyticsData{
+/** 分析中心通用小类型 */
 
-    name:string
+export interface AnalyticsBucket {
+  key: string
+  label: string
+  count: number
+}
 
-    value:number
+export interface NameValue {
+  name: string
+  value: number
+}
 
-    time:string
-
+export interface ScatterPoint {
+  routeId: number
+  name: string
+  distanceNm: number
+  pointCount: number
 }

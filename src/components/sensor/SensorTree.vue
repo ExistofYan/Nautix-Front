@@ -1,12 +1,119 @@
 <template>
+  <div class="sensor-tree nx-panel">
+    <div class="st-head">
+      <el-icon><Files /></el-icon>
+      <span>船舶 / 传感器</span>
+      <el-button size="small" text circle :loading="loading" @click="reload">
+        <el-icon><Refresh /></el-icon>
+      </el-button>
+    </div>
+    <el-input v-model="filterText" size="small" placeholder="搜索船名或传感器" clearable class="st-filter">
+      <template #prefix><el-icon><Search /></el-icon></template>
+    </el-input>
 
-<div>
-
-Sensor Tree
-
-</div>
-
+    <el-scrollbar class="st-scroll">
+      <el-skeleton v-if="loading && !tree.length" :rows="5" animated />
+      <el-empty v-else-if="!tree.length" :image-size="60" description="暂无传感器配置" />
+      <el-tree
+        v-else
+        ref="treeRef"
+        :data="tree"
+        node-key="key"
+        :props="{ label: 'label', children: 'children' }"
+        :filter-node-method="filterNode"
+        highlight-current
+        :expand-on-click-node="false"
+        default-expand-all
+        @node-click="onClick"
+      >
+        <template #default="{ data }">
+          <span class="st-node">
+            <el-icon v-if="!data.config"><Ship /></el-icon>
+            <el-icon v-else><Odometer /></el-icon>
+            <span class="st-label">{{ data.label }}</span>
+            <el-tag v-if="data.config && data.config.status !== 1" size="small" type="info" effect="plain">停用</el-tag>
+          </span>
+        </template>
+      </el-tree>
+    </el-scrollbar>
+  </div>
 </template>
 
 <script setup lang="ts">
+import { computed, onMounted, ref, watch } from 'vue'
+import type { ElTree } from 'element-plus'
+import { useSensorStore } from '@/stores/sensor'
+import { useShipStore } from '@/stores/shipStore'
+import type { SensorConfig } from '@/api/types'
+import type { SensorTreeNode } from '@/types/sensor'
+
+const emit = defineEmits<{ (e: 'select', config: SensorConfig): void }>()
+
+const sensorStore = useSensorStore()
+const shipStore = useShipStore()
+
+const treeRef = ref<InstanceType<typeof ElTree>>()
+const filterText = ref('')
+const loading = computed(() => sensorStore.loading || shipStore.loading)
+
+const tree = computed<SensorTreeNode[]>(() => {
+  const byShip = new Map<number, SensorConfig[]>()
+  for (const c of sensorStore.configs) {
+    if (c.shipId == null) continue
+    const arr = byShip.get(c.shipId) ?? []
+    arr.push(c)
+    byShip.set(c.shipId, arr)
+  }
+  const nodes: SensorTreeNode[] = []
+  for (const ship of shipStore.ships) {
+    if (ship.id == null) continue
+    const configs = byShip.get(ship.id) ?? []
+    if (!configs.length) continue
+    nodes.push({
+      key: `ship-${ship.id}`,
+      label: ship.shipName || `船 #${ship.id}`,
+      children: configs.map(c => ({
+        key: `cfg-${c.id}`,
+        label: sensorStore.nameOf(c.id),
+        config: c,
+      })),
+    })
+  }
+  return nodes
+})
+
+function filterNode(value: string, data: Record<string, unknown>) {
+  if (!value) return true
+  return String((data as unknown as SensorTreeNode).label ?? '').toLowerCase().includes(value.toLowerCase())
+}
+
+watch(filterText, v => treeRef.value?.filter(v))
+
+function onClick(node: SensorTreeNode) {
+  if (node.config) emit('select', node.config)
+}
+
+async function reload() {
+  await Promise.all([shipStore.loadShips(), sensorStore.load(true)])
+}
+
+onMounted(() => {
+  void Promise.all([shipStore.loadShips(), sensorStore.load()])
+})
 </script>
+
+<style scoped>
+.sensor-tree { display: flex; flex-direction: column; height: 100%; min-height: 0; padding: 12px; }
+.st-head {
+  display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700;
+  color: #b8d4f5; margin-bottom: 10px;
+}
+.st-head .el-button { margin-left: auto; }
+.st-filter { margin-bottom: 8px; }
+.st-scroll { flex: 1; min-height: 0; }
+.st-node { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; min-width: 0; }
+.st-label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sensor-tree :deep(.el-tree) { background: transparent; --el-tree-node-hover-bg-color: rgba(56,189,248,.08); }
+.sensor-tree :deep(.el-tree-node__content) { height: 32px; border-radius: 8px; }
+.sensor-tree :deep(.el-tree-node.is-current > .el-tree-node__content) { background: linear-gradient(90deg, rgba(37,99,235,.35), rgba(56,189,248,.15)); }
+</style>

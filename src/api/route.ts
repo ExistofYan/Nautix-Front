@@ -1,5 +1,5 @@
 import request from './axios'
-import type { PageResult, Route } from './types'
+import type { PageResult, Route, RoutePoint } from './types'
 
 /* Fetch routes with paging (GET /route/page).
  * The legacy GET /route endpoint does not exist on the backend. */
@@ -25,26 +25,12 @@ export function getTopRoutesByDistance(count = 10) {
   })
 }
 
-export function getRouteDetail(id:number){
-
-    return request({
-
-        url:`/route/${id}`,
-
-        method:'get'
-
-    })
-
+export function getRouteDetail(id: number) {
+  return request.get<unknown, Route>(`/route/${id}`)
 }
 
-export function getRoutePoints(routeId:number){
-
-    return request({
-
-        url:`/route/${routeId}/points`,
-
-        method:'get'
-
-    })
-
+/* 航线点位：后端无 /route/{id}/points 端点，取全量后前端按 routeId 过滤 */
+export async function getRoutePoints(routeId: number): Promise<RoutePoint[]> {
+  const all = await request.get<unknown, RoutePoint[]>('/route-point')
+  return (all ?? []).filter((p) => p.routeId === routeId)
 }

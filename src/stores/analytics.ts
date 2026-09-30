@@ -1,34 +1,19 @@
-import {defineStore} from 'pinia'
+import { defineStore } from 'pinia'
+import { ref } from 'vue'
+import { getFleetCompanyDist, type FleetRow } from '@/api/analytics'
 
-import {ref} from 'vue'
-
-import {getAnalytics} from '@/api/analytics'
-
-import type {AnalyticsData} from '@/types/analytics'
-
-
-export const useAnalyticsStore=defineStore('analytics',()=>{
-
-
-    const data=ref<AnalyticsData[]>([])
-
-
-    async function load(){
-
-        const res:any=await getAnalytics()
-
-        data.value=res.data??[]
-
+export const useAnalyticsStore = defineStore('analytics', () => {
+  const data = ref<FleetRow[]>([])
+  const loading = ref(false)
+  async function load() {
+    loading.value = true
+    try {
+      data.value = await getFleetCompanyDist()
+    } catch {
+      data.value = []
+    } finally {
+      loading.value = false
     }
-
-
-    return{
-
-        data,
-
-        load
-
-    }
-
-
+  }
+  return { data, loading, load }
 })

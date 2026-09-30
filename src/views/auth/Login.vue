@@ -234,7 +234,7 @@ const handleLogin = async () => {
       if (result.success) {
         ElMessage.success(lang.t('auth.loginOk'))
       } else {
-        ElMessage.error(lang.t('auth.loginFailed'))
+        ElMessage.error(result.message || lang.t('auth.loginFailed'))
       }
     }
   })

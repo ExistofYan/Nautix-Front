@@ -1,0 +1,1 @@
+import{t as e}from"./axios-DnKbYqlH.js";function t(t){return e.get(`/sysOperationLog/page`,{params:t})}function n(t){return e.delete(`/sysOperationLog/${t}`)}export{t as n,n as t};
