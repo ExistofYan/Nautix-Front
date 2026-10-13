@@ -47,7 +47,7 @@ NAUTIX Frontend 是船舶运行监测平台的 Web 客户端，集中展示船�
 | 国际化 | 自定义类型化字典、语言 Store、图表文案转换 |
 | 构建检查 | vue-tsc、npm 锁文件 |
 
-版本以 [package.json](attachment/package.json) 和 [package-lock.json](attachment/package-lock.json) 为准。当前主要地图图层使用 SVG；依赖中包含 Cesium，但不将所有地图页面描述为已实现 Cesium 三维渲染。
+版本以 [package.json](package.json) 和 [package-lock.json](package-lock.json) 为准。当前主要地图图层使用 SVG；依赖中包含 Cesium，但不将所有地图页面描述为已实现 Cesium 三维渲染。
 
 ## 前端架构
 
