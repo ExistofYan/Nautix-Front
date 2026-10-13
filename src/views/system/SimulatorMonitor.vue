@@ -67,7 +67,7 @@
 import { ref, computed, onMounted } from 'vue'
 import SimulatorMonitorComponent from '@/components/system/SimulatorMonitor.vue'
 import { useRuntimeStore } from '@/stores/runtime'
-import { getAllShips } from '@/api/ship'
+import { getAllShipsCached } from '@/api/ship'
 import type { ShipInfo } from '@/api/types'
 
 const rt = useRuntimeStore()
@@ -110,7 +110,7 @@ function fmtTime(t?: string) {
 
 async function loadAll() {
   await rt.refresh()
-  try { ships.value = (await getAllShips()) ?? [] } catch { /* empty */ }
+  try { ships.value = (await getAllShipsCached()) ?? [] } catch { /* empty */ }
 }
 
 onMounted(loadAll)

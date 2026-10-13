@@ -1,14 +1,14 @@
 <template>
   <div class="forecast-panel nx-panel">
     <div class="fp-head">
-      <span class="fp-title"><el-icon><Sunrise /></el-icon> 全球海域天气带</span>
+      <span class="fp-title"><el-icon><Sunrise /></el-icon> {{ lang.t('we.bandTitle') }}</span>
       <el-button size="small" text :loading="loading" @click="load">
-        <el-icon><Refresh /></el-icon>刷新
+        <el-icon><Refresh /></el-icon>{{ lang.t('common.refresh') }}
       </el-button>
     </div>
 
     <el-skeleton v-if="loading && regions.length === 0" animated :rows="3" />
-    <el-empty v-else-if="regions.length === 0" :image-size="60" description="暂无天气数据" />
+    <el-empty v-else-if="regions.length === 0" :image-size="60" :description="lang.t('we.empty')" />
 
     <el-scrollbar v-else>
       <div class="fp-track">
@@ -19,11 +19,11 @@
           :class="{ active: r.id === current?.id }"
           @click="current = r"
         >
-          <div class="fp-name">{{ r.regionName || `区域 ${r.id}` }}</div>
+          <div class="fp-name">{{ r.regionName || lang.t('we.region', { id: r.id ?? '' }) }}</div>
           <div class="fp-temp">{{ fmt(r.airTemperature) }}° / {{ fmt(r.seaTemperature) }}°</div>
           <div class="fp-wind">
             <el-icon :size="12"><WindPower /></el-icon>
-            {{ fmt(r.windSpeed, 0) }} m/s · {{ fmt(r.waveHeight, 1) }}m 浪
+            {{ fmt(r.windSpeed, 0) }} m/s · {{ fmt(r.waveHeight, 1) }}m {{ lang.t('we.waveUnit') }}
           </div>
         </div>
       </div>
@@ -42,7 +42,10 @@
 import { onMounted, ref } from 'vue'
 import type { WeatherRegion } from '@/api/types'
 import { getAllWeatherRegions } from '@/api/weather'
+import { useLang } from '@/stores/lang'
 import WeatherCard from './WeatherCard.vue'
+
+const lang = useLang()
 
 const regions = ref<WeatherRegion[]>([])
 const current = ref<WeatherRegion | null>(null)

@@ -1,5 +1,5 @@
 import { getDashboardStats } from '@/api/dashboard'
-import { getAllRuntimeStatus, getAllShips } from '@/api/ship'
+import { getAllRuntimeStatus, getAllShipsCached } from '@/api/ship'
 import { getAlertRecordPage } from '@/api/alert'
 import { getAlertHourDistribution } from '@/api/dashboard'
 import type { AlertRecord, ShipInfo, ShipRuntimeStatus } from './types'
@@ -30,7 +30,7 @@ export async function fetchCommandSnapshot(): Promise<CommandSnapshot> {
   const [statsRes, runtimeRes, shipsRes, alertsRes, hourRes] = await Promise.all([
     getDashboardStats().catch(() => null),
     getAllRuntimeStatus().catch(() => [] as ShipRuntimeStatus[]),
-    getAllShips().catch(() => [] as ShipInfo[]),
+    getAllShipsCached().catch(() => [] as ShipInfo[]),
     getAlertRecordPage({ page: 1, size: 8 }).catch(() => null),
     getAlertHourDistribution().catch(() => [] as { hour: number; count: number }[]),
   ])

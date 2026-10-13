@@ -1,11 +1,24 @@
 import { computed, reactive, ref } from 'vue'
 import type { Port, RoutePoint, ShipInfo, ShipRuntimeStatus, WeatherRegion } from '@/api/types'
 import { getAllPorts } from '@/api/port'
-import { getAllRoutePoints } from '@/api/ship'
-import { getAllShips, getAllRuntimeStatus } from '@/api/ship'
+import { getRouteGeometry, type RouteGeometry } from '@/api/ship'
+import { getAllShipsCached, getAllRuntimeStatus } from '@/api/ship'
 import { getAllWeatherRegions } from '@/api/weather'
 import { useMap } from '@/hooks/useMap'
 import type { ChartViewerApi, LayerId } from '@/types/map'
+
+/** 后端抽稀几何 → 前端 RoutePoint 结构（保持既有图层代码不变） */
+function toRoutePoints(geoms: RouteGeometry[]): RoutePoint[] {
+  const out: RoutePoint[] = []
+  for (const g of geoms) {
+    if (g.id == null || !Array.isArray(g.pts)) continue
+    g.pts.forEach((pt, i) => {
+      if (!pt || pt.length < 2) return
+      out.push({ routeId: g.id, pointOrder: i + 1, longitude: pt[0], latitude: pt[1] } as RoutePoint)
+    })
+  }
+  return out
+}
 
 export interface MapData {
   ships: ShipInfo[]
@@ -28,6 +41,8 @@ export function useMapData() {
     weather: [],
   })
   const loading = ref(false)
+  /** 是否已完成首帧加载：后台静默刷新时不再弹全屏 loading 遮罩 */
+  const initialized = ref(false)
   const visible = reactive<Record<LayerId, boolean>>({
     ocean: true,
     route: true,
@@ -40,27 +55,48 @@ export function useMapData() {
   })
   const map = useMap()
 
-  async function load() {
-    loading.value = true
-    const [ships, runtime, points, ports, weather] = await Promise.all([
-      getAllShips().catch(() => [] as ShipInfo[]),
-      getAllRuntimeStatus().catch(() => [] as ShipRuntimeStatus[]),
-      getAllRoutePoints().catch(() => [] as RoutePoint[]),
-      getAllPorts().catch(() => [] as Port[]),
-      getAllWeatherRegions().catch(() => [] as WeatherRegion[]),
-    ])
-    data.ships = Array.isArray(ships) ? ships : []
-    data.runtime = Array.isArray(runtime) ? runtime : []
-    data.points = Array.isArray(points) ? points : []
-    data.ports = Array.isArray(ports) ? ports : []
-    data.weather = Array.isArray(weather) ? weather : []
-    if (data.points.length || data.runtime.length) {
-      map.fitPoints([
-        ...data.points.map((p) => ({ longitude: p.longitude ?? 0, latitude: p.latitude ?? 0 })),
-        ...data.runtime.map((r) => ({ longitude: r.longitude ?? 0, latitude: r.latitude ?? 0 })),
+  async function load(background = false) {
+    if (!background) loading.value = true
+    try {
+      const [ships, runtime, geoms, ports, weather] = await Promise.all([
+        getAllShipsCached().catch(() => [] as ShipInfo[]),
+        getAllRuntimeStatus().catch(() => [] as ShipRuntimeStatus[]),
+        getRouteGeometry({ limit: 600, stride: 6 }).catch(() => [] as RouteGeometry[]),
+        getAllPorts().catch(() => [] as Port[]),
+        getAllWeatherRegions().catch(() => [] as WeatherRegion[]),
       ])
+      data.ships = Array.isArray(ships) ? ships : []
+      data.runtime = Array.isArray(runtime) ? runtime : []
+      data.points = toRoutePoints(Array.isArray(geoms) ? geoms : [])
+      data.ports = Array.isArray(ports) ? ports : []
+      data.weather = Array.isArray(weather) ? weather : []
+      // 只有首次加载才自动适配视野；后台刷新保留用户当前视野，
+      // 否则每 15 秒视野被强行拉回全球，用户正在看的区域会“跳走”
+      if (!initialized.value && (data.points.length || data.runtime.length)) {
+        map.fitPoints([
+          ...data.points.map((p) => ({ longitude: p.longitude ?? 0, latitude: p.latitude ?? 0 })),
+          ...data.runtime.map((r) => ({ longitude: r.longitude ?? 0, latitude: r.latitude ?? 0 })),
+        ])
+      }
+      initialized.value = true
+    } finally {
+      if (!background) loading.value = false
     }
-    loading.value = false
+  }
+
+  /**
+   * 后台实时刷新：只更新船舶位置/状态。
+   * 船舶档案、港口、航线几何、天气属于低频变化的静态数据，
+   * 每次轮询都重拉（4MB+）并触发全图层重算重渲染是持续掉帧的主因，
+   * 放在首帧与手动刷新里做即可。
+   */
+  async function loadRealtime() {
+    if (!initialized.value) {
+      await load()
+      return
+    }
+    const runtime = await getAllRuntimeStatus().catch(() => [] as ShipRuntimeStatus[])
+    data.runtime = Array.isArray(runtime) ? runtime : []
   }
 
   /** shipId → ShipInfo */
@@ -115,6 +151,6 @@ export function useMapData() {
   return {
     data, loading, visible, map, viewerApi,
     shipById, runtimeByShip, pointsByRoute,
-    load, toggleLayer,
+    load, loadRealtime, toggleLayer,
   }
 }

@@ -86,9 +86,10 @@ async function load() {
     return
   }
   await store.load()
+  await store.ensurePoints(id)
   let p = store.profileById(id)
   if (!p || !p.points.length) {
-    // 全量点位接口异常时，退化为单航线详情接口
+    // 几何接口也无数据时，退化为单航线详情接口
     try {
       const detail = await request.get<unknown, Route>(`/route/${id}`)
       if (detail && detail.id != null) p = { route: detail as Route & { id: number }, points: [], stats: store.statsOf(detail as Route & { id: number }) }

@@ -26,8 +26,15 @@ export function addSensorData(data: SensorData) {
   return request.post<unknown, boolean>('/sensorData', data)
 }
 
-export function getSensorTrendData(limit: number = 60) {
-  return request.get<unknown, SensorData[]>('/sensorData/trend', { params: { limit } })
+/**
+ * 趋势读数。
+ * 全站最新 N 条几乎全是不同 config（每路仅 1~2 点），画不出线；
+ * 传 shipId 才能拿到该船连续序列（每船 16 类传感器）。
+ */
+export function getSensorTrendData(limit: number = 60, shipId?: number) {
+  return request.get<unknown, SensorData[]>('/sensorData/trend', {
+    params: shipId != null ? { limit, shipId } : { limit },
+  })
 }
 
 export function addSensorDataBatch(data: SensorData[]) {
@@ -47,10 +54,20 @@ export interface VolatilityStat {
   cnt: number
   stdDev: number | null
   mean: number | null
+  /** 后端直接带出的传感器名（前端配置为限量加载，不能靠本地 join） */
+  sensorName?: string | null
+  /** 后端直接带出的所属船 id */
+  shipId?: number | null
 }
 
-export function getSensorVolatility(scan = 300000) {
-  return request.get<unknown, VolatilityStat[]>('/sensorData/volatility', { params: { scan } })
+/**
+ * 波动率统计（后端 SQL 聚合 + 限量）。
+ * scan 语义随 shipId 变化：全站=主键窗口行数，单船=该船最近读数条数。
+ */
+export function getSensorVolatility(scan = 200000, top = 300, shipId?: number) {
+  return request.get<unknown, VolatilityStat[]>('/sensorData/volatility', {
+    params: shipId != null ? { scan, top, shipId } : { scan, top },
+  })
 }
 
 /* ---------- Sensor Dictionary ---------- */
@@ -100,8 +117,22 @@ export function getSensorConfigPage(params: {
   return request.get<unknown, PageResult<SensorConfig>>('/sensorConfig/list', { params })
 }
 
-export function getAllSensorConfigs() {
-  return request.get<unknown, SensorConfig[]>('/sensorConfig')
+/**
+ * 传感器配置列表。
+ * 后端 sensor_config 有 16 万条，全站返回已限量；
+ * 单船页面必须传 shipId，否则限量结果里大概率不含该船的 16 个传感器。
+ */
+export function getAllSensorConfigs(shipId?: number, limit?: number) {
+  return request.get<unknown, SensorConfig[]>('/sensorConfig', {
+    params: shipId != null ? { shipId, limit } : { limit },
+  })
+}
+
+/** 配置总数（列表已限量，KPI 用这个拿真实总数，避免为一个数字拉 16 万条） */
+export function getSensorConfigCount(shipId?: number, status?: number) {
+  return request.get<unknown, number>('/sensorConfig/count', {
+    params: shipId != null || status != null ? { shipId, status } : undefined,
+  })
 }
 
 export function getSensorConfigById(id: number) {

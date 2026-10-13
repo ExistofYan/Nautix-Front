@@ -21,12 +21,19 @@
 </template>
 
 <script setup lang="ts">
-/** 风矢量场图层：格点散布，方向=windDirection，长度/颜色∝windSpeed */
+/**
+ * 风矢量场图层：格点散布，方向=windDirection，长度/颜色∝windSpeed。
+ * 抽样上限 GRID_CAP：全量 1000 区域会让本层与相邻天气层同时铺开数千节点，
+ * 抽样后仍保持均匀格点观感，切换开关不再卡顿。
+ */
 import { computed } from 'vue'
 import type { WeatherRegion } from '@/api/types'
 import { VIEW_W, VIEW_H } from '@/types/map'
 
 const props = defineProps<{ regions: WeatherRegion[] }>()
+
+/** 格点抽样上限 */
+const GRID_CAP = 48
 
 function color(v: number): string {
   if (v >= 20) return '#fb7185'
@@ -40,12 +47,22 @@ function barbs(v: number): number {
   return Math.max(0, Math.min(5, Math.floor(v / 5)))
 }
 
-const cells = computed(() => {
+/** 等距抽样，保留原顺序，保证格点分布均匀 */
+const sampled = computed(() => {
   const n = props.regions.length
+  if (n <= GRID_CAP) return props.regions
+  const step = n / GRID_CAP
+  const out: WeatherRegion[] = []
+  for (let i = 0; i < GRID_CAP; i++) out.push(props.regions[Math.floor(i * step)])
+  return out
+})
+
+const cells = computed(() => {
+  const n = sampled.value.length
   if (!n) return []
   const cols = Math.ceil(Math.sqrt(n))
   const rows = Math.ceil(n / cols)
-  return props.regions.map((r, i) => ({
+  return sampled.value.map((r, i) => ({
     x: ((i % cols) + 0.5) * (VIEW_W / cols),
     y: (Math.floor(i / cols) + 0.5) * (VIEW_H / rows),
     dir: r.windDirection ?? 0,

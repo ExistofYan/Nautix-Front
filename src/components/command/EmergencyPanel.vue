@@ -27,7 +27,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { getAllAlertEvents, getAllAlertRecords } from '@/api/alert'
-import { getAllShips } from '@/api/ship'
+import { getAllShipsCached } from '@/api/ship'
 import { levelOf, LEVEL_COLOR } from '@/types/alert'
 import type { AlertEvent, AlertRecord, ShipInfo } from '@/api/types'
 import type { EnrichedAlert } from '@/types/alert'
@@ -48,7 +48,7 @@ async function load() {
   const [records, events, shipList] = await Promise.all([
     getAllAlertRecords().catch(() => [] as AlertRecord[]),
     getAllAlertEvents().catch(() => [] as AlertEvent[]),
-    getAllShips().catch(() => [] as ShipInfo[]),
+    getAllShipsCached().catch(() => [] as ShipInfo[]),
   ])
   ships.value = Array.isArray(shipList) ? shipList : []
 

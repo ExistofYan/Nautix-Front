@@ -20,7 +20,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
-import { getAllShips, getRuntimeByShip } from '@/api/ship'
+import { getAllShipsCached, getRuntimeByShip } from '@/api/ship'
 import { getRoutePage } from '@/api/route'
 import type { ShipInfo, ShipRuntimeStatus } from '@/api/types'
 import ReplayPlayer from '@/components/replay/ReplayPlayer.vue'
@@ -62,7 +62,7 @@ watch(shipId, async id => {
 
 onMounted(async () => {
   try {
-    const [all, page] = await Promise.all([getAllShips(), getRoutePage({ page: 1, count: 50 })])
+    const [all, page] = await Promise.all([getAllShipsCached(), getRoutePage({ page: 1, count: 50 })])
     ships.value = all ?? []
     routes.value = (page.records ?? []).filter(r => r.id != null).map(r => ({ id: r.id as number }))
     if (ships.value.length > 0 && ships.value[0].id != null) shipId.value = ships.value[0].id

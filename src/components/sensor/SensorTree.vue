@@ -23,7 +23,6 @@
         :filter-node-method="filterNode"
         highlight-current
         :expand-on-click-node="false"
-        default-expand-all
         @node-click="onClick"
       >
         <template #default="{ data }">
@@ -35,6 +34,9 @@
           </span>
         </template>
       </el-tree>
+      <div v-if="tree.length >= SHIP_CAP" class="st-cap">
+        数据量过大，仅展示前 {{ SHIP_CAP }} 艘船的传感器，请用上方搜索框定位
+      </div>
     </el-scrollbar>
   </div>
 </template>
@@ -56,16 +58,26 @@ const treeRef = ref<InstanceType<typeof ElTree>>()
 const filterText = ref('')
 const loading = computed(() => sensorStore.loading || shipStore.loading)
 
+/**
+ * 渲染上限：sensor_config 有 16 万条、ship_info 有 1 万艘，
+ * 若把全部船/传感器一次性建成树节点（尤其配合 default-expand-all），
+ * 主线程会在渲染阶段直接冻结。这里限制船数量与每船传感器数量，
+ * 超出部分提示用户用搜索框定位。
+ */
+const SHIP_CAP = 200
+const CFG_CAP = 20
+
 const tree = computed<SensorTreeNode[]>(() => {
   const byShip = new Map<number, SensorConfig[]>()
   for (const c of sensorStore.configs) {
     if (c.shipId == null) continue
     const arr = byShip.get(c.shipId) ?? []
-    arr.push(c)
+    if (arr.length < CFG_CAP) arr.push(c)
     byShip.set(c.shipId, arr)
   }
   const nodes: SensorTreeNode[] = []
   for (const ship of shipStore.ships) {
+    if (nodes.length >= SHIP_CAP) break
     if (ship.id == null) continue
     const configs = byShip.get(ship.id) ?? []
     if (!configs.length) continue
@@ -111,6 +123,7 @@ onMounted(() => {
 .st-head .el-button { margin-left: auto; }
 .st-filter { margin-bottom: 8px; }
 .st-scroll { flex: 1; min-height: 0; }
+.st-cap { margin-top: 8px; font-size: 11px; line-height: 1.5; color: var(--nx-text-dim); }
 .st-node { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; min-width: 0; }
 .st-label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .sensor-tree :deep(.el-tree) { background: transparent; --el-tree-node-hover-bg-color: rgba(56,189,248,.08); }

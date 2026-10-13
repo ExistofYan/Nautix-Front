@@ -14,15 +14,19 @@
 </template>
 
 <script setup lang="ts">
-/** 图层显隐控制面板：v-model:visible 绑定 Record<LayerId, boolean>，纯 UI */
+/**
+ * 图层显隐控制面板。
+ *
+ * 注意：visible 是父级的 reactive 对象。这里**不再**通过
+ * `v-model:visible` + `{ ...props.visible }` 整体替换 —— 父级把它存在
+ * 从 hook 解构出来的 `const` 上，整体替换会触发
+ * "Assignment to constant variable"，第一个开关点完就报错，
+ * 之后所有图层都不再响应。改为原地写单个布尔字段。
+ */
 import type { LayerId } from '@/types/map'
 import { LAYER_IDS, LAYER_LABELS } from '@/types/map'
 
 const props = defineProps<{ visible: Record<LayerId, boolean> }>()
-
-const emit = defineEmits<{
-  (e: 'update:visible', next: Record<LayerId, boolean>): void
-}>()
 
 const SWATCH: Record<LayerId, string> = {
   ocean: '#0b1f3d',
@@ -36,7 +40,7 @@ const SWATCH: Record<LayerId, string> = {
 }
 
 function toggle(id: LayerId) {
-  emit('update:visible', { ...props.visible, [id]: !props.visible[id] })
+  props.visible[id] = !props.visible[id]
 }
 </script>
 

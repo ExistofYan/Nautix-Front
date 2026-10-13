@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { getAllShips } from '@/api/ship'
+import { getAllShipsCached } from '@/api/ship'
 import type { ShipInfo } from '@/api/types'
 
 export const useShipStore = defineStore('ship', {
@@ -26,7 +26,7 @@ export const useShipStore = defineStore('ship', {
       
       this.loading = true
       try {
-        this.ships = await getAllShips() || []
+        this.ships = await getAllShipsCached() || []
         this.loaded = true
       } catch (error) {
         console.error('Failed to load ships:', error)

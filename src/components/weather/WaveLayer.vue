@@ -16,12 +16,19 @@
 </template>
 
 <script setup lang="ts">
-/** 浪高图层：色阶圆斑（蓝→青→紫）+ 波峰线装饰 */
+/**
+ * 浪高图层：色阶圆斑（蓝→青→紫）+ 波峰线装饰。
+ * 圆斑带 mix-blend-mode: screen（GPU 合成开销大），必须抽样限流，
+ * 全量区域铺开时开关切换会明显掉帧。
+ */
 import { computed } from 'vue'
 import type { WeatherRegion } from '@/api/types'
 import { VIEW_W, VIEW_H } from '@/types/map'
 
 const props = defineProps<{ regions: WeatherRegion[] }>()
+
+/** 圆斑格点抽样上限 */
+const GRID_CAP = 36
 
 function waveColor(h: number): string {
   if (h >= 5) return '#a78bfa'
@@ -31,6 +38,16 @@ function waveColor(h: number): string {
 }
 
 const maxH = computed(() => Math.max(1, ...props.regions.map((r) => r.waveHeight ?? 0)))
+
+/** 等距抽样 */
+const sampled = computed(() => {
+  const n = props.regions.length
+  if (n <= GRID_CAP) return props.regions
+  const step = n / GRID_CAP
+  const out: WeatherRegion[] = []
+  for (let i = 0; i < GRID_CAP; i++) out.push(props.regions[Math.floor(i * step)])
+  return out
+})
 
 const bands = computed(() => {
   const levels = [0.5, 1.5, 3, 5]
@@ -42,11 +59,12 @@ const bands = computed(() => {
 })
 
 const cells = computed(() => {
-  const n = props.regions.length
+  const list = sampled.value
+  const n = list.length
   if (!n) return []
   const cols = Math.ceil(Math.sqrt(n))
   const rows = Math.ceil(n / cols)
-  return props.regions.map((r, i) => {
+  return list.map((r, i) => {
     const h = r.waveHeight ?? 0
     return {
       x: ((i % cols) + 0.5) * (VIEW_W / cols),

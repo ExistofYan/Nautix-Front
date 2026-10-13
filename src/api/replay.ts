@@ -1,5 +1,5 @@
 /* 航迹回放数据源：后端无 /replay 端点，此处用真实端点组合出回放帧。 */
-import { getAllRoutePoints } from '@/api/ship'
+import { getRoutePointsByRoute } from '@/api/ship'
 import { getRouteDetail } from '@/api/route'
 import type { Route, RoutePoint } from '@/api/types'
 import type { ReplayFrame } from '@/types/replay'
@@ -26,10 +26,10 @@ export async function loadReplayRoute(routeId: number): Promise<Route | null> {
   }
 }
 
-/** 拉取某条航线的全部回放帧（/route-point 全量后前端过滤） */
+/** 拉取某条航线的全部回放帧（后端按 routeId 过滤，不拉全量） */
 export async function loadReplayFrames(routeId: number): Promise<ReplayFrame[]> {
-  const all = await getAllRoutePoints()
-  return toFrames((all ?? []).filter(p => p.routeId === routeId))
+  const pts = await getRoutePointsByRoute(routeId)
+  return toFrames(pts ?? [])
 }
 
 /** 纯函数：取 index 邻域帧，用于计算当前航向 */

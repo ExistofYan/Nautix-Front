@@ -156,8 +156,19 @@ function render() {
 
 watch([seriesList], render)
 
+/** 全站最新读数是跨船轮转写入的，每路仅 1~2 点，矩阵必然为空；必须按船取数 */
+watch(shipId, id => {
+  if (id == null) return
+  void Promise.all([sensorStore.ensureShipConfigs(id), dataStore.loadTrend(1200, id)]).then(render)
+})
+
 onMounted(async () => {
-  await Promise.all([sensorStore.load(), dataStore.loadTrend(400)])
+  await Promise.all([sensorStore.load(), shipStore.loadShips(), dataStore.loadTrend(400)])
+  const first = shipStore.ships.find(s => s.id != null)?.id
+  if (first != null) {
+    shipId.value = first
+    await Promise.all([sensorStore.ensureShipConfigs(first), dataStore.loadTrend(1200, first)])
+  }
   render()
 })
 </script>

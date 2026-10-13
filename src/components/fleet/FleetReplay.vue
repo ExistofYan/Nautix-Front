@@ -27,31 +27,31 @@
           stroke-dasharray="5 4"
         />
 
-        <!-- 各船当前位置 + 航向短线 -->
+        <!-- 各船当前位置 + 航向短线（数量与标签均有上限） -->
         <g v-for="s in shipMarks" :key="'sh' + s.shipId">
           <line
             :x1="s.x" :y1="s.y"
             :x2="s.x + Math.sin((s.heading * Math.PI) / 180) * (8 + s.speed)"
             :y2="s.y - Math.cos((s.heading * Math.PI) / 180) * (8 + s.speed)"
-            :stroke="onRoute(s) ? '#34d399' : '#64748b'"
+            :stroke="onRoute(s.shipId) ? '#34d399' : '#64748b'"
             stroke-width="1.8" stroke-linecap="round"
           />
-          <circle :cx="s.x" :cy="s.y" r="3.4" :fill="onRoute(s) ? '#34d399' : '#94a3b8'" />
-          <text :x="s.x + 7" :y="s.y - 6" font-size="10" fill="#cbd5e1">{{ s.name }}</text>
+          <circle :cx="s.x" :cy="s.y" r="3.4" :fill="onRoute(s.shipId) ? '#34d399' : '#94a3b8'" />
+          <text v-if="s.label" :x="s.x + 7" :y="s.y - 6" font-size="10" fill="#cbd5e1">{{ s.label }}</text>
         </g>
       </svg>
 
       <div class="fr-foot">
-        <span>{{ ships.length }} 艘在报 · {{ matched.length }} 艘位于所选航线 ±{{ TOL_DEG }}° 带内</span>
-        <span class="fr-tip">口径：/runtime 船位 × /route-point 航点走廊匹配，每 30s 自动刷新</span>
+        <span>{{ runtime.length }} 艘在报 · {{ matchedCount }} 艘位于所选航线 ±{{ TOL_DEG }}° 带内</span>
+        <span class="fr-tip">口径：/runtime 船位 × /route-point 航点走廊匹配，每 30s 自动刷新；地图最多绘制 {{ MARK_CAP }} 个标记、{{ LABEL_CAP }} 个船名</span>
       </div>
     </template>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
-import { getAllShips, getAllRuntimeStatus, getAllRoutePoints } from '@/api/ship'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { getAllShipsCached, getAllRuntimeStatus, getRoutePointsByRoute } from '@/api/ship'
 import { getRoutePage } from '@/api/route'
 import type { Route, RoutePoint, ShipInfo, ShipRuntimeStatus } from '@/api/types'
 import { makeProjector } from '@/hooks/useMap'
@@ -90,61 +90,128 @@ const selectedPath = computed(() => {
   }).join(' ')
 })
 
-/** 当前页所有在报船的标记 */
+/**
+ * 走廊匹配：runtime 有 1 万条、单条航线可能有上千航点，
+ * 直接双重循环是千万级比较且每次重算都会冻结主线程。
+ * 这里把航点按 TOL_DEG 分桶进网格，每艘船只查同桶与相邻 8 桶，
+ * 复杂度降为 O(船数 × 常数)。
+ */
+const matchedIds = computed(() => {
+  const pts = selectedPoints.value
+  const set = new Set<number>()
+  if (!pts.length) return set
+
+  const cell = TOL_DEG
+  const key = (lat: number, lon: number) => `${Math.floor(lat / cell)}:${Math.floor(lon / cell)}`
+  const grid = new Map<string, [number, number][]>()
+  for (const p of pts) {
+    const k = key(p.latitude as number, p.longitude as number)
+    const bucket = grid.get(k)
+    if (bucket) bucket.push([p.latitude as number, p.longitude as number])
+    else grid.set(k, [[p.latitude as number, p.longitude as number]])
+  }
+
+  for (const r of runtime.value) {
+    if (r.shipId == null || r.latitude == null || r.longitude == null) continue
+    const lat = r.latitude
+    const lon = r.longitude
+    const la = Math.floor(lat / cell)
+    const lo = Math.floor(lon / cell)
+    outer: for (let da = -1; da <= 1; da++) {
+      for (let dl = -1; dl <= 1; dl++) {
+        const bucket = grid.get(`${la + da}:${lo + dl}`)
+        if (!bucket) continue
+        for (const [plat, plon] of bucket) {
+          if (Math.abs(plat - lat) <= TOL_DEG && Math.abs(plon - lon) <= TOL_DEG) {
+            set.add(r.shipId)
+            break outer
+          }
+        }
+      }
+    }
+  }
+  return set
+})
+
+const matchedCount = computed(() => matchedIds.value.size)
+
+/** 航线走廊匹配：一次遍历 runtime × 航点，结果存 Set，模板里 O(1) 查表 */
+function onRoute(shipId: number): boolean {
+  return matchedIds.value.has(shipId)
+}
+
+/** 标记上限：runtime 有 1 万条，全画就是 3 万个 SVG 节点，必然卡死 */
+const MARK_CAP = 400
+const LABEL_CAP = 80
+
+interface ShipMark {
+  shipId: number
+  name: string
+  x: number
+  y: number
+  heading: number
+  speed: number
+}
+
+/** 当前页在报船的标记（航线上的船优先，其余补足到上限） */
 const shipMarks = computed(() => {
   const nameById = new Map<number, string>()
   for (const s of ships.value) if (s.id != null) nameById.set(s.id, s.shipName || `船 #${s.id}`)
-  return runtime.value
-    .filter(r => r.shipId != null && r.latitude != null && r.longitude != null)
-    .map(r => {
-      const q = proj.value({ longitude: r.longitude as number, latitude: r.latitude as number })
-      return {
-        shipId: r.shipId as number,
-        name: nameById.get(r.shipId as number) || `#${r.shipId}`,
-        x: q.x, y: q.y,
-        heading: r.heading ?? 0,
-        speed: r.speed ?? 0,
-        lat: r.latitude as number, lon: r.longitude as number,
-      }
-    })
+  const on: ShipMark[] = []
+  const off: ShipMark[] = []
+  for (const r of runtime.value) {
+    if (r.shipId == null || r.latitude == null || r.longitude == null) continue
+    const q = proj.value({ longitude: r.longitude as number, latitude: r.latitude as number })
+    const mark = {
+      shipId: r.shipId as number,
+      name: nameById.get(r.shipId as number) || `#${r.shipId}`,
+      x: q.x, y: q.y,
+      heading: r.heading ?? 0,
+      speed: r.speed ?? 0,
+    }
+    if (matchedIds.value.has(r.shipId)) on.push(mark)
+    else off.push(mark)
+  }
+  const all = on.concat(off).slice(0, MARK_CAP)
+  // 只给前 LABEL_CAP 个标记画名字，避免上千条中文标签叠成一团
+  return all.map((m, i) => ({ ...m, label: i < LABEL_CAP ? m.name : '' }))
 })
-
-/** 落在所选航线走廊内的船集合 */
-const matched = computed(() => {
-  const pts = selectedPoints.value
-  if (!pts.length) return []
-  return shipMarks.value.filter(s =>
-    pts.some(p =>
-      Math.abs((p.latitude as number) - s.lat) <= TOL_DEG &&
-      Math.abs((p.longitude as number) - s.lon) <= TOL_DEG,
-    ),
-  )
-})
-
-function onRoute(s: { shipId: number }): boolean {
-  return matched.value.some(m => m.shipId === s.shipId)
-}
 
 async function loadAll() {
   loading.value = true
   try {
-    const [pageRes, allPts, allShips, rt] = await Promise.all([
+    const [pageRes, allShips, rt] = await Promise.all([
       getRoutePage({ page: 1, count: 50 }).catch(() => null),
-      getAllRoutePoints().catch(() => [] as RoutePoint[]),
-      getAllShips().catch(() => [] as ShipInfo[]),
+      getAllShipsCached().catch(() => [] as ShipInfo[]),
       getAllRuntimeStatus().catch(() => [] as ShipRuntimeStatus[]),
     ])
     routes.value = pageRes?.records ?? []
-    points.value = Array.isArray(allPts) ? allPts : []
     ships.value = Array.isArray(allShips) ? allShips : []
     runtime.value = Array.isArray(rt) ? rt : []
     if (routeId.value == null && routes.value.length) routeId.value = routes.value[0].id
+    await loadRoutePoints()
   } catch {
     /* 静默降级为空态 */
   } finally {
     loading.value = false
   }
 }
+
+/** 只取当前所选航线的点位：全量 /route-point 有上百 MB，绝不能在这里拉 */
+async function loadRoutePoints() {
+  if (routeId.value == null) {
+    points.value = []
+    return
+  }
+  try {
+    const pts = await getRoutePointsByRoute(routeId.value)
+    points.value = Array.isArray(pts) ? pts : []
+  } catch {
+    points.value = []
+  }
+}
+
+watch(routeId, () => { void loadRoutePoints() })
 
 onMounted(() => {
   void loadAll()

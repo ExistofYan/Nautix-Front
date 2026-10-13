@@ -48,8 +48,10 @@ export function getAlertRecordPage(params: {
   return request.get<unknown, PageResult<AlertRecord>>('/alertRecord/page', { params })
 }
 
-export function getAllAlertRecords() {
-  return request.get<unknown, AlertRecord[]>('/alertRecord/list')
+export function getAllAlertRecords(limit?: number) {
+  return request.get<unknown, AlertRecord[]>('/alertRecord/list', {
+    params: limit != null ? { limit } : undefined,
+  })
 }
 
 export function getAlertRecordById(id: number) {

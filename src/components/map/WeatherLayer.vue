@@ -33,7 +33,10 @@
 </template>
 
 <script setup lang="ts">
-/** 天气总览图层：格点散布的风矢量 + 可选浪高晕圈 */
+/**
+ * 天气总览图层：格点散布的风矢量 + 可选浪高晕圈 + 区域名标签。
+ * 格点等距抽样（GRID_CAP）：全量区域一次性铺数千节点会让"天气"开关卡顿。
+ */
 import { computed } from 'vue'
 import type { MapBounds } from '@/types/map'
 import { VIEW_W, VIEW_H } from '@/types/map'
@@ -45,6 +48,9 @@ const props = defineProps<{
   showWind?: boolean
   showWave?: boolean
 }>()
+
+/** 格点抽样上限 */
+const GRID_CAP = 40
 
 function windColor(v: number): string {
   if (v >= 20) return '#fb7185'
@@ -60,11 +66,13 @@ function waveColor(h: number): string {
 }
 
 const cells = computed(() => {
-  const n = props.regions.length
+  const src = props.regions
+  const n = src.length
   if (!n) return []
-  const cols = Math.ceil(Math.sqrt(n))
-  const rows = Math.ceil(n / cols)
-  return props.regions.map((r, i) => {
+  const list: WeatherRegion[] = n <= GRID_CAP ? src : Array.from({ length: GRID_CAP }, (_, i) => src[Math.floor((i * n) / GRID_CAP)])
+  const cols = Math.ceil(Math.sqrt(list.length))
+  const rows = Math.ceil(list.length / cols)
+  return list.map((r, i) => {
     const gx = ((i % cols) + 0.5) * (VIEW_W / cols)
     const gy = (Math.floor(i / cols) + 0.5) * (VIEW_H / rows)
     return {

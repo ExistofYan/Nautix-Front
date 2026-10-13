@@ -121,7 +121,13 @@ function fmt(v: number | null | undefined, d = 2): string {
 async function onShipChange() {
   loadingVol.value = true
   try {
-    await Promise.all([dataStore.loadTrend(400), dataStore.loadVolatility()])
+    // 全站最新读数是跨船轮转写入的，每路只有 1~2 个点画不出线；
+    // 必须按船取趋势与该船波动率，并补齐该船的 16 条配置。
+    await Promise.all([
+      sensorStore.ensureShipConfigs(shipId.value),
+      dataStore.loadTrend(1200, shipId.value),
+      dataStore.loadVolatility(5000, shipId.value),
+    ])
   } finally {
     loadingVol.value = false
   }

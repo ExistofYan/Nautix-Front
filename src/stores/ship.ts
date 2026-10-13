@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 
 import { ref } from 'vue'
 
-import { getAllShips } from '@/api/ship'
+import { getAllShipsCached } from '@/api/ship'
 
 import type { Ship } from '@/types/ship'
 
@@ -14,7 +14,7 @@ export const useShipStore = defineStore('ship',()=>{
 
     async function loadShips(){
 
-        const res:any = await getAllShips()
+        const res:any = await getAllShipsCached()
 
         ships.value = res.data ?? []
 

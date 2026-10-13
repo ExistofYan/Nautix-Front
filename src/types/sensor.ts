@@ -7,12 +7,16 @@ export interface SensorPoint {
   v: number
 }
 
-/** volatility 端点的单条统计（后端返回 configId/cnt/stdDev/mean） */
+/** volatility 端点的单条统计（后端 SQL 聚合，已带名称与船号） */
 export interface VolatilityStat {
   configId: number
   cnt: number
   stdDev: number | null
   mean: number | null
+  /** 后端 join 带出的传感器名（前端配置为限量加载，不能只靠本地 join） */
+  sensorName?: string | null
+  /** 后端 join 带出的所属船 id */
+  shipId?: number | null
 }
 
 /** volatility + 配置字典 join 后的异常榜行 */

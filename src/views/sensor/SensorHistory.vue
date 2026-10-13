@@ -142,6 +142,9 @@ const groupSeries = computed<Series[]>(() => {
 async function reload() {
   loading.value = true
   try {
+    // 全站配置列表已限量，选中某船时补齐该船的 16 条配置，
+    // 否则表格里的传感器名会退化成 "#id"。
+    if (shipId.value != null) await sensorStore.ensureShipConfigs(shipId.value)
     const res = await getSensorDataPage({
       page: page.value,
       size: size.value,

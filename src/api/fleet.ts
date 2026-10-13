@@ -1,5 +1,5 @@
 /* 船队数据源：后端无 /fleet 端点，用真实端点按运营公司聚合出船队视图。 */
-import { getAllShips, getAllRuntimeStatus } from '@/api/ship'
+import { getAllShipsCached, getAllRuntimeStatus } from '@/api/ship'
 import type { ShipInfo, ShipRuntimeStatus } from '@/api/types'
 import type { Fleet } from '@/types/fleet'
 
@@ -8,7 +8,7 @@ const avg = (xs: number[]): number | null =>
 
 /** 拉取并聚合全部船队（公司分组） */
 export async function getFleetList(): Promise<Fleet[]> {
-  const [ships, runtimes] = await Promise.all([getAllShips(), getAllRuntimeStatus()])
+  const [ships, runtimes] = await Promise.all([getAllShipsCached(), getAllRuntimeStatus()])
   const runtimeById: Record<number, ShipRuntimeStatus> = {}
   for (const r of runtimes ?? []) {
     if (r.shipId != null) runtimeById[r.shipId] = r

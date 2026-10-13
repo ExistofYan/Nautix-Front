@@ -69,7 +69,7 @@ import type { WebSocketMessage } from '@/types/WebSocketMessage'
 import { Stopwatch, Compass, List, TrendCharts } from '@element-plus/icons-vue'
 import GlassPanel from '@/components/layout/GlassPanel.vue'
 import { useRuntimeStore } from '@/stores/runtime'
-import { getAllShips } from '@/api/ship'
+import { getAllShipsCached } from '@/api/ship'
 import { getSensorTrendData } from '@/api/sensor'
 import { useChart, chartTheme } from '@/hooks/useChart'
 import type { ShipInfo, SensorData } from '@/api/types'
@@ -165,7 +165,7 @@ function renderTrend() {
 async function loadAll() {
   loading.value = true
   await rt.refresh()
-  try { if (!ships.value.length) ships.value = (await getAllShips()) ?? [] } catch { /* empty */ }
+  try { if (!ships.value.length) ships.value = (await getAllShipsCached()) ?? [] } catch { /* empty */ }
   try { trend.value = (await getSensorTrendData(120)) ?? [] } catch { trend.value = [] }
   renderStatus()
   renderTrend()

@@ -14,7 +14,7 @@
       <main class="sc-main">
         <SensorDetail v-if="selectedId != null" :key="selectedId" :config-id="selectedId" />
         <template v-else>
-          <SensorDashboard />
+          <SensorDashboard :ship-id="activeShipId" />
           <div class="sc-list">
             <div class="sc-list-title">传感器清单（点击卡片查看详情）</div>
             <div class="sc-list-grid">
@@ -28,9 +28,9 @@
             </div>
           </div>
           <div class="sc-charts">
-            <EngineChart />
-            <FuelChart />
-            <RPMChart />
+            <EngineChart :ship-id="activeShipId" />
+            <FuelChart :ship-id="activeShipId" />
+            <RPMChart :ship-id="activeShipId" />
           </div>
         </template>
       </main>
@@ -39,7 +39,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import type { SensorConfig } from '@/api/types'
 import SensorTree from '@/components/sensor/SensorTree.vue'
 import SensorDetail from '@/components/sensor/SensorDetail.vue'
@@ -49,14 +49,40 @@ import FuelChart from '@/components/sensor/FuelChart.vue'
 import RPMChart from '@/components/sensor/RPMChart.vue'
 import SensorCard from '@/components/sensor/SensorCard.vue'
 import { useSensorStore } from '@/stores/sensor'
+import { useSensorDataStore } from '@/stores/sensorData'
+import { useShipStore } from '@/stores/shipStore'
 
 const selectedId = ref<number>()
+const activeShipId = ref<number>()
 const sensorStore = useSensorStore()
+const dataStore = useSensorDataStore()
+const shipStore = useShipStore()
 void sensorStore.load()
 
-function onSelect(c: SensorConfig) {
-  if (c.id != null) selectedId.value = c.id
+/**
+ * 趋势必须按船取：全站最新读数是跨船轮转写入的，
+ * 每一路只有 1~2 个点，画出来就是"0 路 / No sensor data"。
+ */
+async function ensureTrendFor(shipId?: number) {
+  if (shipId == null || activeShipId.value === shipId) return
+  activeShipId.value = shipId
+  await Promise.all([
+    sensorStore.ensureShipConfigs(shipId),
+    dataStore.loadTrend(1200, shipId),
+  ])
 }
+
+async function onSelect(c: SensorConfig) {
+  if (c.id == null) return
+  await ensureTrendFor(c.shipId)
+  selectedId.value = c.id
+}
+
+onMounted(async () => {
+  await shipStore.loadShips()
+  const first = shipStore.ships.find(s => s.id != null)?.id
+  if (first != null) await ensureTrendFor(first)
+})
 </script>
 
 <style scoped>

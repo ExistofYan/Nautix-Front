@@ -86,7 +86,7 @@ import { ref, onMounted } from 'vue'
 import { Document, Printer, DataBoard, PieChart, Grid, Warning, Bell, Guide } from '@element-plus/icons-vue'
 import GlassPanel from '@/components/layout/GlassPanel.vue'
 import { getDashboardStats, getShipTypeDistribution, type DashboardStats } from '@/api/dashboard'
-import { getAllShips } from '@/api/ship'
+import { getAllShipsCached } from '@/api/ship'
 import { getTopRoutesByDistance } from '@/api/route'
 import { getFleetCompanyDist, getFuelDistribution, getRuleTriggerStats, type FleetRow, type FuelStat, type RuleTriggerRow } from '@/api/analytics'
 import type { Route, ShipInfo } from '@/api/types'
@@ -156,7 +156,7 @@ async function load() {
     const [st, td, sh, fl, fu, ru, tr] = await Promise.all([
       getDashboardStats().catch(() => null),
       getShipTypeDistribution().catch(() => [] as { type: string; count: number }[]),
-      getAllShips().catch(() => [] as ShipInfo[]),
+      getAllShipsCached().catch(() => [] as ShipInfo[]),
       getFleetCompanyDist().catch(() => [] as FleetRow[]),
       getFuelDistribution().catch(() => ({ total: 0, lowCount: 0, buckets: [] }) as FuelStat),
       getRuleTriggerStats().catch(() => [] as RuleTriggerRow[]),

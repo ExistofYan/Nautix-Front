@@ -22,12 +22,19 @@
 </template>
 
 <script setup lang="ts">
-/** 等压线简化图层：气压色带 + 数值标签（不过度工程，矩形带即可） */
+/**
+ * 等压线简化图层：气压色带 + 数值标签（不过度工程，矩形带即可）。
+ * 色带与标签都按抽样后的区域数生成：全量 1000 区域时会切出 1000 条
+ * 横向色带 + 数千文字节点，切换开关明显卡顿。
+ */
 import { computed } from 'vue'
 import type { WeatherRegion } from '@/api/types'
 import { VIEW_W, VIEW_H } from '@/types/map'
 
 const props = defineProps<{ regions: WeatherRegion[] }>()
+
+/** 色带 / 标签抽样上限 */
+const GRID_CAP = 24
 
 function pColor(p: number): string {
   if (p >= 1020) return '#38bdf8'
@@ -40,15 +47,26 @@ const withP = computed(() =>
   props.regions.filter((r) => r.pressure != null).sort((a, b) => (b.pressure ?? 0) - (a.pressure ?? 0)),
 )
 
+/** 等距抽样后再渲染 */
+const sampled = computed(() => {
+  const list = withP.value
+  const n = list.length
+  if (n <= GRID_CAP) return list
+  const step = n / GRID_CAP
+  const out: WeatherRegion[] = []
+  for (let i = 0; i < GRID_CAP; i++) out.push(list[Math.floor(i * step)])
+  return out
+})
+
 const bands = computed(() => {
-  const n = withP.value.length
+  const n = sampled.value.length
   if (!n) return []
   const h = VIEW_H / n
-  return withP.value.map((r, i) => ({ y: i * h, h, color: pColor(r.pressure ?? 1013) }))
+  return sampled.value.map((r, i) => ({ y: i * h, h, color: pColor(r.pressure ?? 1013) }))
 })
 
 const cells = computed(() => {
-  const list = withP.value
+  const list = sampled.value
   const n = list.length
   if (!n) return []
   const cols = Math.ceil(Math.sqrt(n))

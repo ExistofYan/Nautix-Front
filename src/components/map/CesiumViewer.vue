@@ -66,7 +66,7 @@
     <!-- 右上角：工具条 + 图层管理 -->
     <div class="cv-tools">
       <MapToolbar :loading="loading" @zoom="(f: number) => viewerApi.zoomBy(f)" @fit="viewerApi.fitAll()" @refresh="reloadAll" />
-      <LayerManager v-model:visible="visible" />
+      <LayerManager :visible="visible" />
     </div>
     <!-- 左下角：图例 -->
     <div class="cv-legend"><MapLegend /></div>
@@ -141,7 +141,7 @@ const emit = defineEmits<{
   (e: 'shipSelected', ship: ShipInfo | null): void
 }>()
 
-const { data, loading, visible, map, viewerApi, shipById, pointsByRoute, load } = useMapData()
+const { data, loading, visible, map, viewerApi, shipById, pointsByRoute, load, loadRealtime } = useMapData()
 
 const mapStore = useMapStore()
 const pendingAlerts = ref<AlertRecord[]>([])
@@ -169,7 +169,7 @@ const heatPoints = computed(() =>
 
 async function loadAlerts() {
   try {
-    const list = await getAllAlertRecords()
+    const list = await getAllAlertRecords(200)
     pendingAlerts.value = Array.isArray(list) ? list.filter((a) => a.handleStatus !== 1).slice(0, 40) : []
   } catch {
     pendingAlerts.value = []
@@ -247,7 +247,9 @@ function reloadAll() {
 onMounted(() => {
   reloadAll()
   emit('ready', viewerApi)
-  timer = window.setInterval(() => { void load() }, 15000)
+  // 后台静默刷新：只更新船位（/runtime），不重拉船舶档案/港口/航线/天气
+  // 等静态数据，也不弹遮罩、不重置视野；静态数据在进页与手动刷新时更新。
+  timer = window.setInterval(() => { void loadRealtime() }, 15000)
 })
 
 onUnmounted(() => {

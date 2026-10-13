@@ -49,7 +49,7 @@ import GlassPanel from '@/components/layout/GlassPanel.vue'
 import MiniPanel from '@/components/layout/MiniPanel.vue'
 import { getFuelDistribution, type FuelStat } from '@/api/analytics'
 import { getAllRuntimeStatus } from '@/api/ship'
-import { getAllShips } from '@/api/ship'
+import { getAllShipsCached } from '@/api/ship'
 import { useChart, chartTheme } from '@/hooks/useChart'
 import type { ShipInfo, ShipRuntimeStatus } from '@/api/types'
 
@@ -110,7 +110,7 @@ async function load() {
   loading.value = true
   try { stat.value = await getFuelDistribution() } catch { /* keep */ }
   try { runtime.value = (await getAllRuntimeStatus()) ?? [] } catch { runtime.value = [] }
-  try { ships.value = (await getAllShips()) ?? [] } catch { /* empty */ }
+  try { ships.value = (await getAllShipsCached()) ?? [] } catch { /* empty */ }
   loading.value = false
   render()
 }

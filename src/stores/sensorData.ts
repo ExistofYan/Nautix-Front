@@ -43,7 +43,11 @@ export const useSensorDataStore = defineStore('sensorData', () => {
     }))
   }
 
-  /** 把 volatility join 配置/字典/船名，产出带异常标记的行（stdDev 降序） */
+  /**
+   * 把 volatility join 配置/字典/船名，产出带异常标记的行（stdDev 降序）。
+   * 优先用后端 join 带出的 sensorName/shipId（前端配置为限量加载，
+   * 本地 configOf 对超出 limit 的 config 会取不到名字）。
+   */
   const anomalyRows = computed<AnomalyRow[]>(() => {
     const sensor = useSensorStore()
     const ship = useShipStore()
@@ -54,11 +58,12 @@ export const useSensorDataStore = defineStore('sensorData', () => {
         const std = v.stdDev
         let cv: number | null = null
         if (std != null && mean != null && Math.abs(mean) > 1e-9) cv = std / Math.abs(mean)
+        const shipId = cfg?.shipId ?? v.shipId ?? undefined
         return {
           ...v,
-          sensorName: cfg ? sensor.nameOf(cfg.id) : `#${v.configId}`,
-          shipId: cfg?.shipId,
-          shipName: cfg?.shipId != null ? ship.shipMap.get(cfg.shipId)?.shipName || `#${cfg.shipId}` : undefined,
+          sensorName: cfg ? sensor.nameOf(cfg.id) : (v.sensorName || `#${v.configId}`),
+          shipId,
+          shipName: shipId != null ? ship.shipMap.get(shipId)?.shipName || `#${shipId}` : undefined,
           unit: cfg ? sensor.unitOf(cfg.typeId) : '',
           cv,
           abnormal: cv != null && cv > CV_THRESHOLD,
@@ -67,10 +72,15 @@ export const useSensorDataStore = defineStore('sensorData', () => {
       .sort((a, b) => (b.stdDev ?? -1) - (a.stdDev ?? -1))
   })
 
-  async function loadTrend(limit = 200) {
+  /**
+   * 拉取趋势数据。
+   * 全站最新 N 条几乎全是不同 config（每路仅 1~2 点），画不出线；
+   * 必须传 shipId 才能拿到该船 16 类传感器的连续序列。
+   */
+  async function loadTrend(limit = 400, shipId?: number) {
     trendLoading.value = true
     try {
-      const res = await getSensorTrendData(limit)
+      const res = await getSensorTrendData(limit, shipId)
       trend.value = Array.isArray(res) ? res : []
     } catch {
       trend.value = []
@@ -79,10 +89,14 @@ export const useSensorDataStore = defineStore('sensorData', () => {
     }
   }
 
-  async function loadVolatility(scan = 300000) {
+  /**
+   * 拉取波动率统计（后端 SQL 聚合，限量）。
+   * scan 语义随 shipId 变化：全站=主键窗口行数，单船=该船最近读数条数。
+   */
+  async function loadVolatility(scan = 200000, shipId?: number) {
     volLoading.value = true
     try {
-      const res = await getSensorVolatility(scan)
+      const res = await getSensorVolatility(scan, 300, shipId)
       volatility.value = Array.isArray(res) ? res : []
     } catch {
       volatility.value = []

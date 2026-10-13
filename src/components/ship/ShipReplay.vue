@@ -45,7 +45,7 @@
  */
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import type { ShipInfo, ShipRuntimeStatus } from '@/api/types'
-import { getAllShips, getRuntimeByShip } from '@/api/ship'
+import { getAllShipsCached, getRuntimeByShip } from '@/api/ship'
 import { makeProjector, fitBounds } from '@/hooks/useMap'
 import { VIEW_W, VIEW_H } from '@/types/map'
 import ShipStatus from './ShipStatus.vue'
@@ -119,7 +119,7 @@ async function tick() {
 watch(shipId, () => { samples.value = []; void tick() })
 
 onMounted(async () => {
-  try { ships.value = (await getAllShips()) ?? [] } catch { ships.value = [] }
+  try { ships.value = (await getAllShipsCached()) ?? [] } catch { ships.value = [] }
   if (shipId.value == null && ships.value.length) shipId.value = ships.value[0].id ?? null
   void tick()
   timer = window.setInterval(tick, props.intervalMs)

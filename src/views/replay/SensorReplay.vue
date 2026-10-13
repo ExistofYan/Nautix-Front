@@ -24,7 +24,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
 import { getRoutePage } from '@/api/route'
-import { getAllShips } from '@/api/ship'
+import { getAllShipsCached } from '@/api/ship'
 import { getSensorTrendData } from '@/api/sensor'
 import type { SensorData } from '@/api/types'
 import { useReplayStore } from '@/stores/replay'
@@ -61,7 +61,7 @@ watch(shipId, () => void loadTrend())
 
 onMounted(async () => {
   try {
-    const [page, all] = await Promise.all([getRoutePage({ page: 1, count: 50 }), getAllShips()])
+    const [page, all] = await Promise.all([getRoutePage({ page: 1, count: 50 }), getAllShipsCached()])
     routes.value = (page.records ?? []).filter(r => r.id != null).map(r => ({ id: r.id as number, routeName: r.routeName ?? `航线 #${r.id}` }))
     ships.value = (all ?? []).filter(s => s.id != null).map(s => ({ id: s.id as number, name: s.shipName ?? `船 #${s.id}` }))
     if (routes.value.length > 0) routeId.value = routes.value[0].id

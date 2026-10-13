@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import { deleteAlertRecord, getAllAlertRecords, getAlertRecordPage, getAlertRulePage, updateAlertRecord } from '@/api/alert'
-import { getAllShips } from '@/api/ship'
+import { getAllShipsCached } from '@/api/ship'
 import type { AlertRecord, AlertRule, ShipInfo } from '@/api/types'
 import { levelOf, type EnrichedAlert, type RuleAggRow } from '@/types/alert'
 
@@ -74,7 +74,7 @@ export const useAlertStore = defineStore('alert', () => {
     if (loadedAll.value) return
     try {
       const [shipList, ruleRes] = await Promise.all([
-        getAllShips().catch(() => [] as ShipInfo[]),
+        getAllShipsCached().catch(() => [] as ShipInfo[]),
         getAlertRulePage({ page: 1, size: 100 }).catch(() => null),
       ])
       ships.value = shipList ?? []

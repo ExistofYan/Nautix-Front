@@ -1,5 +1,5 @@
 import request from './axios'
-import { getAllShips, getAllRuntimeStatus } from './ship'
+import { getAllShipsCached, getAllRuntimeStatus } from './ship'
 import { getRoutePage, getTopRoutesByDistance } from './route'
 import { getAllPorts } from './port'
 import { getAllAlertRecords, getAlertRulePage } from './alert'
@@ -56,7 +56,7 @@ export function histogram(values: number[], edges: number[], labeler: (lo: numbe
 
 /** 船队规模分布：按运营公司聚合在管船舶数 */
 export async function getFleetCompanyDist(): Promise<FleetRow[]> {
-  const [ships, runtime] = await Promise.all([getAllShips(), getAllRuntimeStatus().catch(() => [] as ShipRuntimeStatus[])])
+  const [ships, runtime] = await Promise.all([getAllShipsCached(), getAllRuntimeStatus().catch(() => [] as ShipRuntimeStatus[])])
   const rtMap = new Map<number, ShipRuntimeStatus>()
   for (const r of runtime ?? []) if (r.shipId != null) rtMap.set(r.shipId, r)
   const groups = new Map<string, ShipInfo[]>()

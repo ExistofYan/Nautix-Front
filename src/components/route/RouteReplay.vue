@@ -22,7 +22,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import type { Route } from '@/api/types'
 import { useRouteStore } from '@/stores/route'
 import RouteAnimation from './RouteAnimation.vue'
@@ -43,6 +43,9 @@ const opts = computed(() =>
 )
 
 const profile = computed(() => (selId.value != null ? store.profileById(selId.value) : null))
+
+/** 选中航线后按需补齐完整点位（总览只有抽稀几何） */
+watch(selId, (v) => { if (v != null) void store.ensurePoints(v) }, { immediate: true })
 
 onMounted(async () => {
   await store.load()

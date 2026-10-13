@@ -29,7 +29,7 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
-import { getAllShips } from '@/api/ship'
+import { getAllShipsCached } from '@/api/ship'
 import { getRoutePage } from '@/api/route'
 import type { Mission } from '@/types/fleet'
 
@@ -81,7 +81,7 @@ onMounted(async () => {
   missions.value = readStore()
   emit('update:missions', missions.value)
   try {
-    const [all, page] = await Promise.all([getAllShips(), getRoutePage({ page: 1, count: 50 })])
+    const [all, page] = await Promise.all([getAllShipsCached(), getRoutePage({ page: 1, count: 50 })])
     ships.value = (all ?? []).filter(s => s.id != null).map(s => ({ id: s.id as number, shipName: s.shipName ?? `船 #${s.id}` }))
     routes.value = (page.records ?? []).filter(r => r.id != null).map(r => ({ id: r.id as number, routeName: r.routeName ?? `航线 #${r.id}` }))
   } catch { /* 空态兜底 */ }

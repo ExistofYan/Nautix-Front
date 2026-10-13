@@ -68,7 +68,7 @@ const loading = ref(false)
 const rows = computed(() => dataStore.anomalyRows)
 const abnormalCount = computed(() => rows.value.filter(r => r.abnormal).length)
 const maxStd = computed(() => (rows.value.length ? Math.max(...rows.value.map(r => r.stdDev ?? -Infinity)) : null))
-const scanLabel = computed(() => '30 万')
+const scanLabel = computed(() => '20 万')
 
 function fmt(v: number | null | undefined, d = 2): string {
   return v == null || !Number.isFinite(v) ? '—' : v.toFixed(d)

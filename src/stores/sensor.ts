@@ -41,7 +41,14 @@ export const useSensorStore = defineStore('sensor', () => {
 
   function configOf(configId?: number): SensorConfig | undefined {
     if (configId == null) return undefined
-    return configById.value.get(configId)
+    const hit = configById.value.get(configId)
+    if (hit) return hit
+    // 全站列表被限量时，从按船缓存里兜底查找
+    for (const arr of Object.values(shipConfigs.value)) {
+      const c = arr.find(x => x.id === configId)
+      if (c) return c
+    }
+    return undefined
   }
 
   function nameOf(configId?: number): string {
@@ -50,9 +57,33 @@ export const useSensorStore = defineStore('sensor', () => {
     return c.sensorName || `${typeNameOf(c.typeId) ?? '传感器'} #${c.id}`
   }
 
+  /**
+   * 某船的传感器配置。
+   * 全站 configs 已被后端限量（16 万条只回前若干），
+   * 单船页面若只靠它过滤，大概率一条都取不到，
+   * 因此按船单独拉一次并缓存（每船仅 16 条）。
+   */
+  const shipConfigCache = new Map<number, SensorConfig[]>()
+  const shipConfigs = ref<Record<number, SensorConfig[]>>({})
+
   function configsOfShip(shipId?: number): SensorConfig[] {
     if (shipId == null) return configs.value
+    const cached = shipConfigs.value[shipId] ?? shipConfigCache.get(shipId)
+    if (cached) return cached
     return configs.value.filter(c => c.shipId === shipId)
+  }
+
+  async function ensureShipConfigs(shipId?: number) {
+    if (shipId == null) return
+    if (shipConfigs.value[shipId]?.length) return
+    try {
+      const list = await getAllSensorConfigs(shipId, 200)
+      const arr = Array.isArray(list) ? list : []
+      shipConfigCache.set(shipId, arr)
+      shipConfigs.value = { ...shipConfigs.value, [shipId]: arr }
+    } catch {
+      /* 失败时回退到全站限量结果过滤 */
+    }
   }
 
   function withDict(c: SensorConfig): ConfigWithDict {
@@ -92,6 +123,7 @@ export const useSensorStore = defineStore('sensor', () => {
     configOf,
     nameOf,
     configsOfShip,
+    ensureShipConfigs,
     withDict,
     load,
   }

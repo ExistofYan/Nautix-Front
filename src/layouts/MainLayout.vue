@@ -74,74 +74,74 @@
 
           <el-menu-item index="/ai">
             <el-icon><MagicStick /></el-icon>
-            <template #title>智能问答台</template>
+            <template #title>{{ lang.t('nav.aiWorkbench') }}</template>
           </el-menu-item>
 
           <el-sub-menu index="replay">
             <template #title>
               <el-icon><VideoCamera /></el-icon>
-              <span>回放与航线</span>
+              <span>{{ lang.t('nav.replay') }}</span>
             </template>
-            <el-menu-item index="/replay">航迹工作台</el-menu-item>
-            <el-menu-item index="/replay/ship">单船回放</el-menu-item>
-            <el-menu-item index="/replay/sensor">传感器回放</el-menu-item>
-            <el-menu-item index="/route/replay">航线回放</el-menu-item>
-            <el-menu-item index="/route/animation">航线动画</el-menu-item>
+            <el-menu-item index="/replay">{{ lang.t('nav.trackWorkbench') }}</el-menu-item>
+            <el-menu-item index="/replay/ship">{{ lang.t('nav.replayShip') }}</el-menu-item>
+            <el-menu-item index="/replay/sensor">{{ lang.t('nav.replaySensor') }}</el-menu-item>
+            <el-menu-item index="/route/replay">{{ lang.t('nav.routeReplay') }}</el-menu-item>
+            <el-menu-item index="/route/animation">{{ lang.t('nav.routeAnimation') }}</el-menu-item>
           </el-sub-menu>
 
           <el-sub-menu index="fleet">
             <template #title>
               <el-icon><Grid /></el-icon>
-              <span>船队管理</span>
+              <span>{{ lang.t('nav.fleet') }}</span>
             </template>
-            <el-menu-item index="/fleet">船队总览</el-menu-item>
-            <el-menu-item index="/fleet/map">船队态势</el-menu-item>
-            <el-menu-item index="/fleet/report">船队报告</el-menu-item>
-            <el-menu-item index="/fleet/mission">任务规划</el-menu-item>
+            <el-menu-item index="/fleet">{{ lang.t('nav.fleetOverview') }}</el-menu-item>
+            <el-menu-item index="/fleet/map">{{ lang.t('nav.fleetMap') }}</el-menu-item>
+            <el-menu-item index="/fleet/report">{{ lang.t('nav.fleetReport') }}</el-menu-item>
+            <el-menu-item index="/fleet/mission">{{ lang.t('nav.mission') }}</el-menu-item>
           </el-sub-menu>
 
           <el-sub-menu index="alert-extra">
             <template #title>
               <el-icon><WarnTriangleFilled /></el-icon>
-              <span>告警分析</span>
+              <span>{{ lang.t('nav.alertAnalysis') }}</span>
             </template>
-            <el-menu-item index="/alert/overview">告警总览</el-menu-item>
-            <el-menu-item index="/alert/analysis">规则分析</el-menu-item>
-            <el-menu-item index="/alert/statistics">告警统计</el-menu-item>
-            <el-menu-item index="/alert/map">告警分布</el-menu-item>
-            <el-menu-item index="/alert/history">告警历史</el-menu-item>
+            <el-menu-item index="/alert/overview">{{ lang.t('nav.alertOverview') }}</el-menu-item>
+            <el-menu-item index="/alert/analysis">{{ lang.t('nav.ruleAnalysis') }}</el-menu-item>
+            <el-menu-item index="/alert/statistics">{{ lang.t('nav.alertStatistics') }}</el-menu-item>
+            <el-menu-item index="/alert/map">{{ lang.t('nav.alertDistribution') }}</el-menu-item>
+            <el-menu-item index="/alert/history">{{ lang.t('nav.alertHistory') }}</el-menu-item>
           </el-sub-menu>
 
           <el-sub-menu index="sensor-extra">
             <template #title>
               <el-icon><TrendCharts /></el-icon>
-              <span>传感分析</span>
+              <span>{{ lang.t('nav.sensorAnalysis') }}</span>
             </template>
-            <el-menu-item index="/sensor/center">传感中心</el-menu-item>
-            <el-menu-item index="/sensor/analysis">多维分析</el-menu-item>
-            <el-menu-item index="/sensor/anomaly">异常检测</el-menu-item>
-            <el-menu-item index="/sensor/correlation">关联矩阵</el-menu-item>
-            <el-menu-item index="/sensor/history">历史数据</el-menu-item>
+            <el-menu-item index="/sensor/center">{{ lang.t('nav.sensorHub') }}</el-menu-item>
+            <el-menu-item index="/sensor/analysis">{{ lang.t('nav.multiDimAnalysis') }}</el-menu-item>
+            <el-menu-item index="/sensor/anomaly">{{ lang.t('nav.anomalyDetection') }}</el-menu-item>
+            <el-menu-item index="/sensor/correlation">{{ lang.t('nav.correlationMatrix') }}</el-menu-item>
+            <el-menu-item index="/sensor/history">{{ lang.t('nav.historicalData') }}</el-menu-item>
           </el-sub-menu>
 
           <el-menu-item index="/system">
             <el-icon><Monitor /></el-icon>
-            <template #title>系统监控</template>
+            <template #title>{{ lang.t('nav.systemMonitor') }}</template>
           </el-menu-item>
 
           <el-menu-item index="/earth">
             <el-icon><Apple /></el-icon>
-            <template #title>数字地球</template>
+            <template #title>{{ lang.t('nav.digitalEarth') }}</template>
           </el-menu-item>
 
           <el-menu-item index="/command">
             <el-icon><Aim /></el-icon>
-            <template #title>指挥中心</template>
+            <template #title>{{ lang.t('nav.commandCenter') }}</template>
           </el-menu-item>
 
           <el-menu-item index="/workspace">
             <el-icon><Grid /></el-icon>
-            <template #title>效率工作台</template>
+            <template #title>{{ lang.t('nav.workspace') }}</template>
           </el-menu-item>
 
           <el-menu-item index="/system/logs">
